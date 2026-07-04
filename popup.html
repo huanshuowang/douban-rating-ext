@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <style>
+    :root { color-scheme: light dark; }
+    body {
+      width: 320px; margin: 0; padding: 14px;
+      font: 13px/1.5 -apple-system, "PingFang SC", sans-serif;
+      color: #18191c; background: #fff;
+    }
+    h1 { font-size: 13px; margin: 0 0 10px; color: #61666d; font-weight: 600; }
+    #kw {
+      width: 100%; box-sizing: border-box; padding: 7px 8px; font-size: 14px;
+      border: 1px solid #d0d3d6; border-radius: 6px; margin-bottom: 4px;
+    }
+    #kw:focus { outline: none; border-color: #00a1d6; }
+    .hint { font-size: 11px; color: #9499a0; margin: 0 0 10px; }
+
+    #result {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px; border: 1px solid #eee; border-radius: 8px;
+      margin-bottom: 10px; min-height: 46px;
+    }
+    #score { font-size: 30px; font-weight: 700; color: #007722; line-height: 1; }
+    #score.na { font-size: 15px; color: #9499a0; font-weight: 500; }
+    #meta { flex: 1; min-width: 0; }
+    #title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #sub { font-size: 11px; color: #9499a0; }
+    #open {
+      display: none; text-decoration: none; background: #007722; color: #fff;
+      padding: 6px 10px; border-radius: 6px; white-space: nowrap; font-size: 12px;
+    }
+    #open:hover { opacity: .9; }
+
+    .spin {
+      width: 18px; height: 18px; border: 2px solid #d0d3d6; border-top-color: #007722;
+      border-radius: 50%; animation: r .7s linear infinite;
+    }
+    @keyframes r { to { transform: rotate(360deg); } }
+
+    .label { font-size: 11px; color: #9499a0; margin: 8px 0 4px; }
+    .row { display: flex; gap: 6px; }
+    a.btn {
+      flex: 1; text-align: center; text-decoration: none; padding: 6px;
+      border-radius: 6px; font-size: 12px; white-space: nowrap;
+    }
+    a.btn:hover { opacity: .88; }
+    .cn { background: #eaf6ee; color: #007722; }
+    .os { background: #eef3fd; color: #1a73e8; }
+    #empty { color: #9499a0; }
+  </style>
+</head>
+<body>
+  <h1>🟢 这豆瓣评分多少？</h1>
+
+  <div id="app" hidden>
+    <input id="kw" type="text" placeholder="搜索关键词，回车重新查询" />
+    <p class="hint">搜索关键词（片名不准可改后回车重查）</p>
+
+    <div id="result">
+      <div class="spin" id="spin"></div>
+      <div id="meta"><div id="title">查询中…</div><div id="sub"></div></div>
+      <a id="open" target="_blank" rel="noopener">在豆瓣查看</a>
+    </div>
+
+    <div class="label">手动搜索（备用）</div>
+    <div class="row">
+      <a id="baidu" class="btn cn" target="_blank" rel="noopener">百度</a>
+      <a id="doubanS" class="btn cn" target="_blank" rel="noopener">豆瓣直搜</a>
+      <a id="google" class="btn os" target="_blank" rel="noopener">Google</a>
+      <a id="bing" class="btn os" target="_blank" rel="noopener">Bing</a>
+    </div>
+  </div>
+
+  <div id="empty" hidden>没读到片名。请在影视 / 搜索页（Netflix · YouTube · 爱奇艺 · Bilibili · Google…）打开此插件。</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

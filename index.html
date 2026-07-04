@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>这豆瓣评分多少？</title>
+  <style>
+    :root { --green:#007722; --blue:#00a1d6; --ink:#18191c; --sub:#61666d; --line:#eaecef; --bg:#f6f7f8; }
+    * { box-sizing: border-box; }
+    body { margin:0; font:15px/1.7 -apple-system,"PingFang SC",Segoe UI,sans-serif; color:var(--ink); background:var(--bg); }
+    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+
+    header { text-align:center; padding:56px 20px 40px; }
+    header img { width:88px; height:88px; border-radius:20px; box-shadow:0 6px 20px rgba(0,0,0,.12); }
+    h1 { font-size:30px; margin:18px 0 6px; }
+    .tag { color:var(--sub); font-size:16px; margin:0; }
+    .pills { margin-top:18px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+    .pill { font-size:13px; padding:5px 12px; border-radius:999px; background:#eaf6ee; color:var(--green); }
+    .pill.b { background:#e7f6fc; color:var(--blue); }
+
+    .dl { margin-top:26px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+    .dl-btn { display:inline-flex; align-items:center; gap:8px; text-decoration:none;
+      background:var(--green); color:#fff; font-size:15px; font-weight:600;
+      padding:12px 22px; border-radius:10px; box-shadow:0 4px 14px rgba(0,119,34,.25);
+      transition:transform .12s ease, box-shadow .12s ease; }
+    .dl-btn:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,119,34,.32); }
+    .dl-btn.ghost { background:#fff; color:var(--green); border:1px solid var(--line); box-shadow:none; }
+    .dl-hint { color:var(--sub); font-size:12px; margin:12px 0 0; }
+
+    section { background:#fff; border:1px solid var(--line); border-radius:14px; padding:24px 26px; margin:16px 0; }
+    h2 { font-size:18px; margin:0 0 14px; }
+    .feat { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+    .feat div { background:var(--bg); border-radius:10px; padding:14px 16px; }
+    .feat b { display:block; margin-bottom:2px; }
+    .feat span { color:var(--sub); font-size:13px; }
+    ol { margin:0; padding-left:22px; }
+    ol li { margin:6px 0; }
+    code { background:#eef0f2; padding:2px 6px; border-radius:5px; font-size:13px; }
+    .note { background:#eaf6ee; border-left:3px solid var(--green); padding:12px 16px; border-radius:0 8px 8px 0; color:#215; font-size:14px; }
+    footer { text-align:center; color:var(--sub); font-size:13px; padding:30px 0 50px; }
+    @media (max-width:520px){ .feat{ grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="icons/score/icon128.png" alt="插件图标" />
+    <h1>这豆瓣评分多少？</h1>
+    <p class="tag">看剧 / 看电影 / 刷解说 / 逛搜索页——点一下就知道豆瓣多少分</p>
+    <div class="pills">
+      <span class="pill">🟢 直接显示评分</span>
+      <span class="pill b">🎬 全网几乎通用</span>
+      <span class="pill">🔒 不封 IP</span>
+    </div>
+    <div class="dl">
+      <a class="dl-btn" href="douban-rating-ext.zip" download>⬇ 下载插件</a>
+    </div>
+    <p class="dl-hint">下载后解压，按下方「安装」步骤加载即可 · 约 30&nbsp;KB</p>
+  </header>
+
+  <div class="wrap">
+    <section>
+      <h2>它能做什么</h2>
+      <div class="feat">
+        <div><b>点图标即查</b><span>读取当前网页的片名，自动去掉站名/前后缀清洗成片名</span></div>
+        <div><b>大号评分 + 直达</b><span>显示豆瓣分数，一键跳转豆瓣条目页</span></div>
+        <div><b>三家竞速</b><span>Google / Bing / 百度谁先出评分用谁</span></div>
+        <div><b>随时改词重查</b><span>弹窗自带搜索框，识别不准回车即可重查 · 缓存 7 天</span></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>所有网页 · 随时都能用</h2>
+      <p>插件读的是<strong>当前页面的片名</strong>——哪儿有片名就能查。已验证可用：<strong>Bilibili、Netflix、YouTube、Google / Bing 搜索结果页</strong> 等。片名识别不准时，弹窗顶部的<strong>搜索框</strong>可随时改关键词回车重查。</p>
+    </section>
+
+    <section>
+      <h2>获取评分的方式安全吗</h2>
+      <p>豆瓣的<strong>搜索接口</strong>对海外 IP 限流极狠，所以本插件<strong>不碰豆瓣搜索</strong>。评分优先从搜索引擎摘要里读；只有当摘要没评分、却已经拿到豆瓣<strong>条目 id</strong> 时，才去读那<strong>一个条目页</strong>取分。</p>
+      <div class="note">所有网络请求只在你<strong>打开插件那一刻</strong>发生，浏览页面时零请求。豆瓣接触量 ≈ 你手动点开一次。</div>
+    </section>
+
+    <section>
+      <h2>安装</h2>
+      <ol>
+        <li>点上方 <strong>下载插件</strong>，把得到的 <code>douban-rating-ext.zip</code> <strong>解压</strong>成文件夹</li>
+        <li>打开 <code>chrome://extensions</code></li>
+        <li>右上角打开「开发者模式」</li>
+        <li>点「加载已解压的扩展程序」，选择解压出的 <code>douban-rating-ext</code> 文件夹</li>
+        <li>打开任意带片名的页面（Netflix / YouTube / 爱奇艺 / Bilibili / Google 搜索…），点右上角插件图标</li>
+      </ol>
+    </section>
+
+  </div>
+
+  <footer>数据来自公开搜索结果与豆瓣页面<br>Made by Happy</footer>
+</body>
+</html>

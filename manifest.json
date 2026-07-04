@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "这豆瓣评分多少？",
+  "version": "1.0.0",
+  "description": "看剧/看电影/刷解说/逛搜索页，点一下就知道豆瓣多少分。任何带片名的页面都能用。",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "https://www.google.com/*",
+    "https://www.bing.com/*",
+    "https://www.baidu.com/*",
+    "https://movie.douban.com/*"
+  ],
+  "action": {
+    "default_title": "查豆瓣评分",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/score/icon16.png",
+      "32": "icons/score/icon32.png"
+    }
+  },
+  "icons": {
+    "16": "icons/score/icon16.png",
+    "32": "icons/score/icon32.png",
+    "48": "icons/score/icon48.png",
+    "128": "icons/score/icon128.png"
+  }
+}
