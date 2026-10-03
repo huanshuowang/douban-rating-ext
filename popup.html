@@ -3,77 +3,253 @@
 <head>
   <meta charset="utf-8" />
   <style>
-    :root { color-scheme: light dark; }
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --surface: #f5f7f5;
+      --card: #ffffff;
+      --ink: #121a15;
+      --ink-2: #57625a;
+      --ink-3: #8c968f;
+      --line: #e3e8e4;
+      --brand: #007722;
+      --brand-hover: #00661d;
+      --brand-soft: #e8f4eb;
+      --focus: rgba(0, 119, 34, .22);
+      --star: #ffac2d;
+      --star-off: #e2e6e3;
+      --warn-bg: #fff5e2;
+      --warn-ink: #8a5300;
+      --skel: #edf0ee;
+      --skel-hi: #f7f9f8;
+      --t5: #007722; --t4: #1b8a37; --t3: #6a8a1c; --t2: #b07510; --t1: #c2432c;
+      --shadow: 0 1px 2px rgba(18, 26, 21, .04), 0 4px 14px rgba(18, 26, 21, .06);
+      --num: "SF Pro Display", -apple-system, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #141715;
+        --surface: #1b1f1c;
+        --card: #1e2320;
+        --ink: #e8eee9;
+        --ink-2: #a1ada4;
+        --ink-3: #6e7a72;
+        --line: #2b322d;
+        --brand: #2b9d50;
+        --brand-hover: #35b15d;
+        --brand-soft: #1b3122;
+        --focus: rgba(76, 194, 116, .28);
+        --star-off: #343b36;
+        --warn-bg: #33270f;
+        --warn-ink: #f0c26b;
+        --skel: #262c28;
+        --skel-hi: #2f3631;
+        --t5: #4cc274; --t4: #62c983; --t3: #a7c457; --t2: #e3a744; --t1: #ef7b64;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 4px 14px rgba(0, 0, 0, .25);
+      }
+    }
+
+    * { box-sizing: border-box; }
     body {
-      width: 320px; margin: 0; padding: 14px;
-      font: 13px/1.5 -apple-system, "PingFang SC", sans-serif;
-      color: #18191c; background: #fff;
+      width: 340px; margin: 0; padding: 14px 14px 12px;
+      font: 13px/1.5 -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
+      color: var(--ink); background: var(--bg);
+      -webkit-font-smoothing: antialiased;
     }
-    h1 { font-size: 13px; margin: 0 0 10px; color: #61666d; font-weight: 600; }
+    button, input { font: inherit; color: inherit; }
+    a { color: inherit; }
+    :focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+
+    /* ---------- header ---------- */
+    .bar { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .bar img { width: 18px; height: 18px; }
+    .brand { font-weight: 650; font-size: 13px; letter-spacing: .01em; }
+    .host {
+      margin-left: auto; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      font-size: 11px; color: var(--ink-3); background: var(--surface);
+      padding: 1px 8px; border-radius: 999px;
+    }
+    .host:empty { display: none; }
+
+    /* ---------- search ---------- */
+    .search {
+      display: flex; align-items: center; gap: 6px;
+      height: 38px; padding: 0 6px 0 10px;
+      background: var(--surface); border: 1px solid transparent; border-radius: 10px;
+      transition: border-color .15s, box-shadow .15s, background .15s;
+    }
+    .search:focus-within { background: var(--card); border-color: var(--brand); box-shadow: 0 0 0 3px var(--focus); }
+    .search svg { flex: none; color: var(--ink-3); }
     #kw {
-      width: 100%; box-sizing: border-box; padding: 7px 8px; font-size: 14px;
-      border: 1px solid #d0d3d6; border-radius: 6px; margin-bottom: 4px;
+      flex: 1; min-width: 0; height: 100%; border: 0; background: transparent;
+      font-size: 14px; font-weight: 500; outline: none;
     }
-    #kw:focus { outline: none; border-color: #00a1d6; }
-    .hint { font-size: 11px; color: #9499a0; margin: 0 0 10px; }
+    #kw::placeholder { color: var(--ink-3); font-weight: 400; }
+    kbd {
+      flex: none; font: 11px/1 var(--num); color: var(--ink-3);
+      border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; padding: 3px 5px;
+      opacity: 0; transition: opacity .15s;
+    }
+    .search:focus-within kbd { opacity: 1; }
+    .hint { font-size: 11px; color: var(--ink-3); margin: 5px 2px 0; }
 
-    #result {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px; border: 1px solid #eee; border-radius: 8px;
-      margin-bottom: 10px; min-height: 46px;
+    #alts { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 8px 0 0; }
+    #alts[hidden] { display: none; }
+    #alts .lbl { font-size: 11px; color: var(--ink-3); margin-right: 1px; }
+    button.alt {
+      max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
+      border-radius: 999px; padding: 2px 10px; font-size: 12px; cursor: pointer;
+      transition: border-color .15s, color .15s, background .15s;
     }
-    #score { font-size: 30px; font-weight: 700; color: #007722; line-height: 1; }
-    #score.na { font-size: 15px; color: #9499a0; font-weight: 500; }
-    #meta { flex: 1; min-width: 0; }
-    #title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    #sub { font-size: 11px; color: #9499a0; }
-    #open {
-      display: none; text-decoration: none; background: #007722; color: #fff;
-      padding: 6px 10px; border-radius: 6px; white-space: nowrap; font-size: 12px;
-    }
-    #open:hover { opacity: .9; }
+    button.alt:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
 
-    .spin {
-      width: 18px; height: 18px; border: 2px solid #d0d3d6; border-top-color: #007722;
-      border-radius: 50%; animation: r .7s linear infinite;
+    /* ---------- result card ---------- */
+    .card {
+      position: relative; display: flex; align-items: center; gap: 14px;
+      margin-top: 12px; padding: 14px 14px 14px 16px; min-height: 86px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+      box-shadow: var(--shadow);
     }
-    @keyframes r { to { transform: rotate(360deg); } }
+    .score-col { flex: none; width: 74px; display: flex; flex-direction: column; gap: 6px; }
+    .score {
+      font: 700 42px/1 var(--num); letter-spacing: -.03em;
+      font-variant-numeric: tabular-nums; color: var(--tier, var(--brand));
+    }
+    .stars {
+      position: relative; width: 70px; height: 12px;
+      --star-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.6l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.4l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z'/%3E%3C/svg%3E");
+      -webkit-mask: var(--star-mask) 0 0 / 14px 12px repeat-x;
+              mask: var(--star-mask) 0 0 / 14px 12px repeat-x;
+      background: var(--star-off);
+    }
+    .stars i {
+      position: absolute; inset: 0 auto 0 0; width: var(--pct, 0%);
+      background: var(--star); transition: width .7s cubic-bezier(.2, .8, .2, 1);
+    }
+    .meta { flex: 1; min-width: 0; }
+    .title {
+      font-size: 15px; font-weight: 650; line-height: 1.35;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+      word-break: break-word;
+    }
+    .sub-row { display: flex; align-items: center; gap: 6px; margin-top: 3px; flex-wrap: wrap; }
+    #sub { font-size: 12px; color: var(--ink-2); }
+    .verdict {
+      font-size: 11px; font-weight: 600; line-height: 18px; padding: 0 7px; border-radius: 999px;
+      color: var(--tier); background: color-mix(in srgb, var(--tier) 12%, transparent);
+    }
+    .verdict[hidden] { display: none; }
 
-    .label { font-size: 11px; color: #9499a0; margin: 8px 0 4px; }
-    .row { display: flex; gap: 6px; }
-    a.btn {
-      flex: 1; text-align: center; text-decoration: none; padding: 6px;
-      border-radius: 6px; font-size: 12px; white-space: nowrap;
+    .card[data-tier="5"] { --tier: var(--t5); }
+    .card[data-tier="4"] { --tier: var(--t4); }
+    .card[data-tier="3"] { --tier: var(--t3); }
+    .card[data-tier="2"] { --tier: var(--t2); }
+    .card[data-tier="1"] { --tier: var(--t1); }
+
+    /* 无分：大号破折号 + 说明 */
+    .card.na .score { color: var(--ink-3); font-weight: 500; }
+    .card.na .stars, .card.idle .stars { opacity: .6; }
+
+    /* 加载：骨架屏 */
+    .card.loading .score, .card.loading .title {
+      color: transparent; border-radius: 6px;
+      background: linear-gradient(90deg, var(--skel) 25%, var(--skel-hi) 50%, var(--skel) 75%) 0 0 / 200% 100%;
+      animation: shimmer 1.2s linear infinite;
     }
-    a.btn:hover { opacity: .88; }
-    .cn { background: #eaf6ee; color: #007722; }
-    .os { background: #eef3fd; color: #1a73e8; }
-    #empty { color: #9499a0; }
+    .card.loading .score { width: 64px; }
+    .card.loading .title { width: 75%; height: 16px; }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* 空闲：页面没读到片名 */
+    .card.idle .score { color: var(--ink-3); font-weight: 500; }
+
+    /* ---------- warning ---------- */
+    .warn {
+      display: flex; gap: 6px; align-items: flex-start;
+      margin-top: 8px; padding: 7px 10px; border-radius: 9px;
+      background: var(--warn-bg); color: var(--warn-ink); font-size: 12px; line-height: 1.45;
+    }
+    .warn[hidden] { display: none; }
+    .warn svg { flex: none; margin-top: 2px; }
+
+    /* ---------- CTA ---------- */
+    .cta {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      height: 38px; margin-top: 10px; border-radius: 10px;
+      background: var(--brand); color: #fff; text-decoration: none; font-weight: 600; font-size: 13px;
+      transition: background .15s, transform .1s;
+    }
+    .cta:hover { background: var(--brand-hover); }
+    .cta:active { transform: scale(.985); }
+    .cta.ghost { background: var(--brand-soft); color: var(--brand); }
+    .cta.ghost:hover { background: color-mix(in srgb, var(--brand) 16%, transparent); }
+    .cta[hidden] { display: none; }
+
+    /* ---------- manual fallback ---------- */
+    .manual {
+      display: flex; align-items: center; gap: 2px; flex-wrap: wrap;
+      margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line);
+      font-size: 11px; color: var(--ink-3);
+    }
+    .manual span { margin-right: 4px; }
+    .manual a {
+      text-decoration: none; color: var(--ink-2); padding: 2px 7px; border-radius: 6px;
+      transition: background .15s, color .15s;
+    }
+    .manual a:hover { background: var(--surface); color: var(--brand); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
   </style>
 </head>
 <body>
-  <h1>🟢 这豆瓣评分多少？</h1>
+  <header class="bar">
+    <img src="icons/score/icon32.png" alt="" />
+    <span class="brand">这豆瓣评分多少？</span>
+    <span class="host" id="host" title="从这个网页读取片名"></span>
+  </header>
 
-  <div id="app" hidden>
-    <input id="kw" type="text" placeholder="搜索关键词，回车重新查询" />
-    <p class="hint">搜索关键词（片名不准可改后回车重查）</p>
+  <main id="app">
+    <label class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="kw" type="text" placeholder="输入片名，回车查询" aria-label="片名" autocomplete="off" spellcheck="false" />
+      <kbd aria-hidden="true">↵</kbd>
+    </label>
+    <p class="hint" id="hint">片名不对？直接改，回车重查</p>
+    <div id="alts" hidden><span class="lbl">也可能是</span></div>
 
-    <div id="result">
-      <div class="spin" id="spin"></div>
-      <div id="meta"><div id="title">查询中…</div><div id="sub"></div></div>
-      <a id="open" target="_blank" rel="noopener">在豆瓣查看</a>
+    <section id="card" class="card loading" aria-live="polite" aria-busy="true">
+      <div class="score-col">
+        <div id="score" class="score">0.0</div>
+        <div class="stars" aria-hidden="true"><i id="stars"></i></div>
+      </div>
+      <div class="meta">
+        <div id="title" class="title">&nbsp;</div>
+        <div class="sub-row"><span id="sub">正在问 Google · Bing · 百度…</span><span id="verdict" class="verdict" hidden></span></div>
+      </div>
+    </section>
+
+    <div id="warn" class="warn" hidden>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/></svg>
+      <span id="warnText"></span>
     </div>
 
-    <div class="label">手动搜索（备用）</div>
-    <div class="row">
-      <a id="baidu" class="btn cn" target="_blank" rel="noopener">百度</a>
-      <a id="doubanS" class="btn cn" target="_blank" rel="noopener">豆瓣直搜</a>
-      <a id="google" class="btn os" target="_blank" rel="noopener">Google</a>
-      <a id="bing" class="btn os" target="_blank" rel="noopener">Bing</a>
-    </div>
-  </div>
+    <a id="open" class="cta" target="_blank" rel="noopener" hidden>
+      <span id="openText">在豆瓣查看</span>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+    </a>
 
-  <div id="empty" hidden>没读到片名。请在影视 / 搜索页（Netflix · YouTube · 爱奇艺 · Bilibili · Google…）打开此插件。</div>
+    <nav class="manual" aria-label="手动搜索">
+      <span>没找对？去</span>
+      <a id="baidu" target="_blank" rel="noopener">百度</a>
+      <a id="doubanS" target="_blank" rel="noopener">豆瓣</a>
+      <a id="google" target="_blank" rel="noopener">Google</a>
+      <a id="bing" target="_blank" rel="noopener">Bing</a>
+      <span>搜</span>
+    </nav>
+  </main>
 
   <script src="popup.js"></script>
 </body>

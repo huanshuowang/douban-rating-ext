@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>Store screenshots</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #fafaf6; --paper-2: #f0f2ec; --card: #fff; --ink: #111813; --ink-2: #4f5a52; --ink-3: #87918a;
+    --line: #e3e6df; --brand: #007722; --brand-soft: #e6f3e9; --mark: #c8efd3; --star: #ffac2d; --star-off: #e2e6e3;
+    --strike: #c2432c; --warn-bg: #fff5e2; --warn-ink: #8a5300;
+    --t5: #007722; --t4: #1b8a37;
+    --serif: "Noto Serif SC", "Songti SC", serif;
+    --sans: -apple-system, "PingFang SC", "Hiragino Sans GB", sans-serif;
+    --num: "SF Pro Display", -apple-system, sans-serif;
+    --shadow: 0 1px 2px rgba(17,24,19,.05), 0 18px 40px -12px rgba(17,24,19,.18), 0 40px 80px -30px rgba(17,24,19,.16);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; background: #ccc; }
+  .slide {
+    width: 1280px; height: 800px; position: relative; overflow: hidden; background: var(--paper);
+    display: grid; grid-template-columns: 500px 1fr; gap: 48px; align-items: center; padding: 0 72px;
+  }
+  .slide::before { content: ""; position: absolute; right: -160px; top: -120px; width: 900px; height: 900px; background: radial-gradient(closest-side, rgba(0,119,34,.13), transparent); pointer-events: none; }
+  body:not(.all) .slide { display: none; }
+  body:not(.all) .slide.on { display: grid; }
+  .kicker { display: inline-flex; align-items: center; gap: 10px; font-size: 18px; font-weight: 600; color: var(--brand); letter-spacing: .06em; margin-bottom: 22px; }
+  .kicker b { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--brand); color: #fff; font: 700 15px/1 var(--num); letter-spacing: 0; }
+  h1 { font: 900 60px/1.16 var(--serif); letter-spacing: -.01em; margin: 0 0 24px; }
+  h1 em { font-style: normal; color: var(--brand); }
+  .lede { font-size: 22px; line-height: 1.65; color: var(--ink-2); margin: 0 0 30px; }
+  .lede strong { color: var(--ink); }
+  .checks { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+  .checks li { display: flex; gap: 12px; align-items: center; font-size: 20px; color: var(--ink-2); }
+  .checks li::before { content: ""; flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--brand-soft) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23007722' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 12.5 4 4L18 8'/%3E%3C/svg%3E") center / 14px no-repeat; }
+  .brandline { position: absolute; left: 72px; bottom: 40px; display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 650; color: var(--ink-2); }
+  .brandline img { width: 22px; height: 22px; }
+  .brandline span { font-weight: 400; color: var(--ink-3); }
+  .vis { position: relative; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+  /* browser mock */
+  .browser { width: 100%; background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow); overflow: hidden; }
+  .bbar { display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: var(--paper-2); border-bottom: 1px solid var(--line); }
+  .dots { display: flex; gap: 7px; } .dots i { width: 11px; height: 11px; border-radius: 50%; background: #d9ddd6; }
+  .url { flex: 1; height: 30px; border-radius: 8px; background: var(--card); display: flex; align-items: center; padding: 0 12px; font: 13px var(--num); color: var(--ink-3); }
+  .ext { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 8px; background: var(--brand-soft); box-shadow: 0 0 0 2px var(--brand); }
+  .ext img { width: 18px; height: 18px; }
+  .page { padding: 20px 20px 26px; }
+  .thumb { aspect-ratio: 16/7; border-radius: 12px; background: linear-gradient(135deg, #3b2a4a, #130e18); display: grid; place-items: center; }
+  .thumb span { width: 54px; height: 54px; border-radius: 50%; background: rgba(255,255,255,.16); display: grid; place-items: center; color: #fff; }
+  .raw { margin: 18px 0 10px; font-size: 21px; font-weight: 650; line-height: 1.5; }
+  .noise { color: var(--ink-3); text-decoration: line-through; text-decoration-color: var(--strike); text-decoration-thickness: 2px; }
+  .keep { background: linear-gradient(var(--mark), var(--mark)) 0 88% / 100% 42% no-repeat; }
+  .ghost i { display: block; height: 10px; border-radius: 5px; background: var(--paper-2); margin-top: 10px; }
+
+  /* popup mock (same look as the real popup) */
+  .pm { width: 340px; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 14px 14px 12px; font-size: 13px; line-height: 1.5; zoom: 1.28; }
+  .pm.float { position: absolute; right: -8px; top: 118px; }
+  .pm-bar { display: flex; align-items: center; gap: 8px; margin-bottom: 11px; font-weight: 650; }
+  .pm-bar img { width: 17px; height: 17px; }
+  .pm-bar .host { margin-left: auto; font-size: 11px; font-weight: 400; color: var(--ink-3); background: var(--paper-2); padding: 1px 8px; border-radius: 999px; }
+  .pm-search { display: flex; align-items: center; gap: 7px; height: 36px; padding: 0 10px; border-radius: 10px; background: var(--paper-2); color: var(--ink-3); }
+  .pm-search.focus { background: var(--card); box-shadow: 0 0 0 1px var(--brand), 0 0 0 4px rgba(0,119,34,.18); }
+  .pm-search b { color: var(--ink); font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pm-search b.sel { background: #cfe3fb; }
+  .hint { font-size: 11px; color: var(--ink-3); margin: 5px 2px 0; }
+  .alts { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; margin-top: 8px; font-size: 11px; color: var(--ink-3); }
+  .alt { font-size: 12px; color: var(--ink-2); border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; background: var(--card); }
+  .alt.hov { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+  .card { display: flex; align-items: center; gap: 13px; margin-top: 11px; padding: 13px 13px 13px 15px; min-height: 84px; border: 1px solid var(--line); border-radius: 13px; background: var(--card); box-shadow: 0 1px 2px rgba(17,24,19,.04), 0 4px 14px rgba(17,24,19,.06); }
+  .sc { flex: none; width: 70px; display: flex; flex-direction: column; gap: 6px; }
+  .score { font: 700 40px/1 var(--num); letter-spacing: -.03em; color: var(--t5); font-variant-numeric: tabular-nums; }
+  .score.na { color: var(--ink-3); font-weight: 500; }
+  .stars { position: relative; width: 68px; height: 12px; background: var(--star-off);
+    --m: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.6l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.4l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z'/%3E%3C/svg%3E");
+    -webkit-mask: var(--m) 0 0 / 13.6px 12px repeat-x; }
+  .stars i { position: absolute; inset: 0 auto 0 0; background: var(--star); }
+  .t { font-size: 15px; font-weight: 650; line-height: 1.35; }
+  .s { display: flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 12px; color: var(--ink-2); }
+  .verdict { font-size: 11px; font-weight: 600; padding: 0 7px; line-height: 18px; border-radius: 999px; color: var(--t5); background: rgba(0,119,34,.1); }
+  .warn { display: flex; gap: 6px; margin-top: 8px; padding: 7px 10px; border-radius: 9px; background: var(--warn-bg); color: var(--warn-ink); font-size: 12px; line-height: 1.45; }
+  .cta { display: flex; align-items: center; justify-content: center; gap: 6px; height: 38px; margin-top: 10px; border-radius: 10px; background: var(--brand); color: #fff; font-weight: 600; }
+  .cta.ghost { background: var(--brand-soft); color: var(--brand); }
+  .manual { margin-top: 11px; padding-top: 9px; border-top: 1px solid var(--line); font-size: 11px; color: var(--ink-3); display: flex; gap: 12px; }
+  .manual b { font-weight: 400; color: var(--ink-2); }
+
+  /* dark popup */
+  .pm.dark { --card: #1e2320; --paper-2: #262c28; --ink: #e8eee9; --ink-2: #a1ada4; --ink-3: #6e7a72; --line: #2f3632; --brand: #2b9d50; --brand-soft: #1b3122; --star-off: #343b36; --t5: #4cc274; }
+  .pm.dark .verdict { background: rgba(76,194,116,.14); }
+
+  /* slide 1: before/after */
+  .flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 28px; }
+  .flow .st { font-size: 16px; padding: 6px 12px; border-radius: 999px; background: var(--card); border: 1px solid var(--line); color: var(--ink-3); text-decoration: line-through; text-decoration-color: rgba(194,67,44,.6); }
+  .flow .ar { color: var(--ink-3); }
+  .flow .now { font-size: 16px; font-weight: 700; padding: 6px 14px; border-radius: 999px; background: var(--brand); color: #fff; }
+  .flow .lab { font-size: 15px; color: var(--ink-3); width: 100%; margin-bottom: -2px; }
+
+  /* slide 2: pipeline */
+  .pipe { display: flex; flex-direction: column; gap: 14px; width: 100%; }
+  .src { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; box-shadow: 0 1px 2px rgba(17,24,19,.04), 0 8px 20px -8px rgba(17,24,19,.12); display: grid; grid-template-columns: 70px 1fr auto; gap: 16px; align-items: center; }
+  .src h3 { margin: 0; font-size: 15px; color: var(--ink-3); letter-spacing: .06em; font-weight: 600; }
+  .src p { margin: 0; font-size: 19px; line-height: 1.55; }
+  .src .dim { color: var(--ink-3); }
+  .pts { font: 700 15px/1 var(--num); color: var(--brand); background: var(--brand-soft); padding: 6px 9px; border-radius: 8px; }
+  .pts.zero { color: var(--ink-3); background: var(--paper-2); }
+  mark { background: var(--mark); color: inherit; padding: 0 3px; border-radius: 4px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { font-size: 16px; padding: 3px 12px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-3); }
+  .chip.hit { border-color: var(--brand); background: var(--brand-soft); color: var(--brand); font-weight: 600; }
+  .down { display: flex; align-items: center; gap: 14px; justify-content: center; color: var(--ink-3); font-size: 16px; }
+
+  /* slide 3: grid */
+  .grid4 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; width: 100%; }
+  .mini { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 18px; box-shadow: 0 1px 2px rgba(17,24,19,.04), 0 10px 24px -10px rgba(17,24,19,.14); }
+  .mini .site { font: 600 13px var(--num); color: var(--ink-3); display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .mini .site i { width: 8px; height: 8px; border-radius: 50%; background: var(--c); }
+  .mini .rt { font-size: 15.5px; font-weight: 600; line-height: 1.5; min-height: 47px; }
+  .mini .res { display: flex; align-items: center; gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px dashed var(--line); }
+  .mini .res .score { font-size: 34px; }
+  .mini .res .t { font-size: 14px; }
+
+  /* slide 4 callouts */
+  .callouts { position: absolute; inset: 0; pointer-events: none; }
+  .co { position: absolute; display: flex; align-items: center; gap: 10px; font-size: 17px; font-weight: 600; color: var(--ink); background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 14px; box-shadow: 0 6px 18px -8px rgba(17,24,19,.2); white-space: nowrap; }
+  .co b { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--brand); color: #fff; font: 700 13px var(--num); }
+
+  /* slide 5 */
+  .duo { display: flex; gap: 26px; align-items: center; }
+  .steps { display: flex; flex-direction: column; gap: 16px; margin-top: 6px; }
+  .step { display: grid; grid-template-columns: 34px 1fr; gap: 14px; align-items: start; }
+  .step b { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--brand); font: 700 15px var(--num); }
+  .step div { font-size: 19px; color: var(--ink-2); line-height: 1.5; padding-top: 3px; }
+  .step strong { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<!-- 1 · 痛点 + 一步到位 -->
+<section class="slide" data-s="1">
+  <div>
+    <div class="kicker"><b>1</b>点一下就有分</div>
+    <h1>值不值得看？<br /><em>点一下</em>就知道</h1>
+    <p class="lede">刷 B 站解说、看 YouTube 预告、逛 Netflix 时，<strong>不用复制片名，也不用切页面</strong>。点一下插件图标，豆瓣评分直接给你。</p>
+    <div class="flow">
+      <div class="lab">以前</div>
+      <span class="st">复制片名</span><span class="ar">→</span><span class="st">打开豆瓣</span><span class="ar">→</span><span class="st">搜索</span><span class="ar">→</span><span class="st">找对条目</span>
+      <div class="lab" style="margin-top:10px">现在</div>
+      <span class="now">点一下 · 直接出分</span>
+    </div>
+  </div>
+  <div class="vis">
+    <div class="browser" style="margin-top:-40px">
+      <div class="bbar"><div class="dots"><i></i><i></i><i></i></div><div class="url">bilibili.com/video/BV1x…</div><div class="ext"><img src="../icons/score/icon32.png" alt="" /></div></div>
+      <div class="page">
+        <div class="thumb"><span><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></span></div>
+        <div class="raw"><span class="noise">【4K修复】一口气看完</span><span class="keep">《霸王别姬》</span><span class="noise">张国荣封神之作</span></div>
+        <div class="ghost"><i style="width:38%"></i><i style="width:52%"></i></div>
+      </div>
+    </div>
+    <div class="pm float" style="top:96px">
+      <div class="pm-bar"><img src="../icons/logo.svg" alt="" />这豆瓣评分多少？<span class="host">bilibili.com</span></div>
+      <div class="pm-search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><b>霸王别姬</b></div>
+      <div class="card"><div class="sc"><div class="score">9.6</div><div class="stars"><i style="width:96%"></i></div></div><div><div class="t">霸王别姬</div><div class="s">豆瓣评分<span class="verdict">封神</span></div></div></div>
+      <div class="cta">在豆瓣查看 ↗</div>
+    </div>
+  </div>
+  <div class="brandline"><img src="../icons/logo.svg" alt="" />这豆瓣评分多少？<span>Chrome 扩展</span></div>
+</section>
+
+<!-- 2 · 智能识别 -->
+<section class="slide" data-s="2">
+  <div>
+    <div class="kicker"><b>2</b>智能识别片名</div>
+    <h1>标题没写片名？<br /><em>简介和标签</em>里找</h1>
+    <p class="lede">很多解说视频的标题只写「看懂结局你就赢了」。插件把<strong>标题、简介、标签</strong>放在一起看，同一个名字出现得越多，就越可能是你在看的那部。</p>
+    <ul class="checks">
+      <li>自动跳过 BGM 歌名、活动话题、分类标签</li>
+      <li>去掉「中文字幕」「1080P」「预告」「第 3 集」</li>
+    </ul>
+  </div>
+  <div class="vis">
+    <div class="pipe">
+      <div class="src"><h3>标题</h3><p class="dim">诺兰最烧脑的一部！看懂这个结局你就赢了</p><span class="pts zero">+0</span></div>
+      <div class="src"><h3>简介</h3><p>本期影片：<mark>《盗梦空间》</mark><br /><span class="dim" style="font-size:16px">BGM：《Time》 ← 歌名，跳过</span></p><span class="pts">+3</span></div>
+      <div class="src"><h3>标签</h3><div class="chips"><span class="chip">科幻</span><span class="chip">电影解说</span><span class="chip hit">盗梦空间</span><span class="chip">克里斯托弗·诺兰</span></div><span class="pts">+3</span></div>
+      <div class="down"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>命中 2 处，拿去查</div>
+      <div style="display:flex;justify-content:center"><div class="pm" style="zoom:1.2">
+        <div class="card" style="margin-top:0"><div class="sc"><div class="score">9.4</div><div class="stars"><i style="width:94%"></i></div></div><div><div class="t">盗梦空间 · Inception</div><div class="s">豆瓣评分<span class="verdict">封神</span></div></div></div>
+      </div></div>
+    </div>
+  </div>
+  <div class="brandline"><img src="../icons/logo.svg" alt="" />这豆瓣评分多少？<span>Chrome 扩展</span></div>
+</section>
+
+<!-- 3 · 全网通用 -->
+<section class="slide" data-s="3">
+  <div>
+    <div class="kicker"><b>3</b>全网通用</div>
+    <h1>哪儿有片名，<br /><em>哪儿就能查</em></h1>
+    <p class="lede">B 站、YouTube、Netflix、爱奇艺、Google 搜索页……自动剥掉站名、宣发词、画质标记，<strong>中英文片名都认得</strong>，结果按豆瓣官方「中文名 · 原名」显示。</p>
+    <ul class="checks">
+      <li>Google / Bing / 百度 三家同时查，国内海外都快</li>
+      <li>同一部片 7 天内秒开</li>
+    </ul>
+  </div>
+  <div class="vis">
+    <div class="grid4">
+      <div class="mini" style="--c:#fb7299"><div class="site"><i></i>bilibili.com</div><div class="rt"><span class="noise">【4K修复】一口气看完</span><span class="keep">《霸王别姬》</span></div><div class="res"><div class="score">9.6</div><div><div class="t">霸王别姬</div><div class="s"><span class="verdict">封神</span></div></div></div></div>
+      <div class="mini" style="--c:#ff3b30"><div class="site"><i></i>youtube.com</div><div class="rt"><span class="keep">Interstellar</span> <span class="noise">| Official Teaser Trailer</span></div><div class="res"><div class="score">9.4</div><div><div class="t">星际穿越 · Interstellar</div><div class="s"><span class="verdict">封神</span></div></div></div></div>
+      <div class="mini" style="--c:#e50914"><div class="site"><i></i>netflix.com</div><div class="rt"><span class="noise">Watch</span> <span class="keep">Spirited Away</span> <span class="noise">| Netflix</span></div><div class="res"><div class="score">9.4</div><div><div class="t">千与千寻 · 千と千尋の神隠し</div><div class="s"><span class="verdict">封神</span></div></div></div></div>
+      <div class="mini" style="--c:#4285f4"><div class="site"><i></i>google.com</div><div class="rt"><span class="keep">肖申克的救赎</span> <span class="noise">- Google 搜索</span></div><div class="res"><div class="score">9.7</div><div><div class="t">肖申克的救赎 · The Shawshank Redemption</div><div class="s"><span class="verdict">封神</span></div></div></div></div>
+    </div>
+  </div>
+  <div class="brandline"><img src="../icons/logo.svg" alt="" />这豆瓣评分多少？<span>Chrome 扩展</span></div>
+</section>
+
+<!-- 4 · 不怕认错 -->
+<section class="slide" data-s="4">
+  <div>
+    <div class="kicker"><b>4</b>不怕认错</div>
+    <h1>认错了，<br /><em>它会提醒你</em></h1>
+    <p class="lede">拿豆瓣条目的中文名、原名、又名和年份去比对。对不上就直说「可能不是」，<strong>绝不拿别的片的分数糊弄你</strong>。</p>
+    <ul class="checks">
+      <li>片名已选中，直接打字回车重查</li>
+      <li>「也可能是」候选，一点即换</li>
+      <li>新片没分就写「暂无评分」</li>
+    </ul>
+  </div>
+  <div class="vis">
+    <div style="position:relative">
+      <div class="pm">
+        <div class="pm-bar"><img src="../icons/logo.svg" alt="" />这豆瓣评分多少？<span class="host">bilibili.com</span></div>
+        <div class="pm-search focus"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><b class="sel">最后一案 El problema final</b></div>
+        <p class="hint">片名不对？直接改，回车重查</p>
+        <div class="alts">也可能是<span class="alt hov">最后一案</span><span class="alt">El problema final</span></div>
+        <div class="card"><div class="sc"><div class="score na">—</div><div class="stars"><i style="width:0"></i></div></div><div><div class="t">最后一案 · El problema final</div><div class="s">豆瓣暂无评分（未上映或评价人数不足）</div></div></div>
+        <div class="cta">在豆瓣查看 ↗</div>
+        <div class="manual">没找对？去 <b>百度</b><b>豆瓣</b><b>Google</b><b>Bing</b> 搜</div>
+      </div>
+      <div class="pm" style="position:absolute;left:-70px;bottom:-60px;zoom:1.05;padding:9px 10px;width:auto">
+        <div class="warn" style="margin:0;white-space:nowrap"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:2px"><path d="M12 3 2 21h20L12 3z"/><path d="M12 10v5M12 18h.01"/></svg>豆瓣上最接近的是《逃出绝命镇》，可能不是「逃出绝命街」</div>
+      </div>
+    </div>
+  </div>
+  <div class="brandline"><img src="../icons/logo.svg" alt="" />这豆瓣评分多少？<span>Chrome 扩展</span></div>
+</section>
+
+<!-- 5 · 安全 + 深色 -->
+<section class="slide" data-s="5">
+  <div>
+    <div class="kicker"><b>5</b>安心用</div>
+    <h1>不封 IP，<br /><em>不收集数据</em></h1>
+    <div class="steps">
+      <div class="step"><b>1</b><div><strong>只在你点图标时联网</strong>，浏览网页期间零请求</div></div>
+      <div class="step"><b>2</b><div><strong>不碰豆瓣搜索接口</strong>，从搜索引擎结果里读分</div></div>
+      <div class="step"><b>3</b><div>最多读<strong>一个</strong>豆瓣条目页，和你手动点开一次一样</div></div>
+      <div class="step"><b>4</b><div>没有开发者服务器，缓存只存在<strong>你自己的浏览器</strong></div></div>
+    </div>
+  </div>
+  <div class="vis">
+    <div class="duo" style="position:relative;width:100%;height:560px">
+      <div class="pm" style="zoom:1.08;position:absolute;left:0;top:40px">
+        <div class="pm-bar"><img src="../icons/logo.svg" alt="" />这豆瓣评分多少？<span class="host">youtube.com</span></div>
+        <div class="pm-search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><b>Interstellar</b></div>
+        <div class="card"><div class="sc"><div class="score">9.4</div><div class="stars"><i style="width:94%"></i></div></div><div><div class="t">星际穿越 · Interstellar</div><div class="s">豆瓣评分<span class="verdict">封神</span></div></div></div>
+        <div class="cta">在豆瓣查看 ↗</div>
+      </div>
+      <div class="pm dark" style="zoom:1.08;position:absolute;right:0;top:230px">
+        <div class="pm-bar"><img src="../icons/logo.svg" alt="" />这豆瓣评分多少？<span class="host">youtube.com</span></div>
+        <div class="pm-search"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><b>Interstellar</b></div>
+        <div class="card"><div class="sc"><div class="score">9.4</div><div class="stars"><i style="width:94%"></i></div></div><div><div class="t">星际穿越 · Interstellar</div><div class="s">豆瓣评分<span class="verdict">封神</span></div></div></div>
+        <div class="cta">在豆瓣查看 ↗</div>
+      </div>
+    </div>
+    <div style="position:absolute;top:690px;right:0;font-size:17px;color:var(--ink-3)">浅色 / 深色模式，跟随系统</div>
+  </div>
+  <div class="brandline"><img src="../icons/logo.svg" alt="" />这豆瓣评分多少？<span>Chrome 扩展</span></div>
+</section>
+
+<script>
+  const s = new URLSearchParams(location.search).get("s");
+  if (s) document.querySelector('.slide[data-s="' + s + '"]').classList.add("on");
+  else document.body.classList.add("all");
+</script>
+</body>
+</html>

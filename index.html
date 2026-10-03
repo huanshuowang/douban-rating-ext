@@ -4,94 +4,822 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>这豆瓣评分多少？</title>
+  <meta name="description" content="Chrome 扩展：刷解说、看预告、逛流媒体时，点一下插件图标就显示豆瓣评分。自动从标题、简介、标签里认出片名。" />
+  <link rel="icon" href="icons/logo.svg" type="image/svg+xml" />
+  <link rel="alternate icon" href="icons/score/icon32.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet" />
   <style>
-    :root { --green:#007722; --blue:#00a1d6; --ink:#18191c; --sub:#61666d; --line:#eaecef; --bg:#f6f7f8; }
+    :root {
+      --paper: #fafaf6;
+      --paper-2: #f2f3ee;
+      --card: #ffffff;
+      --ink: #111813;
+      --ink-2: #4f5a52;
+      --ink-3: #87918a;
+      --line: #e3e6df;
+      --brand: #007722;
+      --brand-hover: #00661d;
+      --brand-soft: #e6f3e9;
+      --mark: #c8efd3;
+      --star: #ffac2d;
+      --star-off: #e2e6e3;
+      --strike: #c2432c;
+      --t5: #007722; --t4: #1b8a37; --t3: #6a8a1c; --t2: #b07510; --t1: #c2432c;
+      --shadow-lg: 0 1px 2px rgba(17, 24, 19, .05), 0 12px 32px -8px rgba(17, 24, 19, .14), 0 32px 64px -24px rgba(17, 24, 19, .12);
+      --shadow-sm: 0 1px 2px rgba(17, 24, 19, .05), 0 4px 12px rgba(17, 24, 19, .05);
+      --glow: radial-gradient(closest-side, rgba(0, 119, 34, .16), transparent);
+      --serif: "Noto Serif SC", "Songti SC", "STSong", serif;
+      --sans: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+      --num: "SF Pro Display", -apple-system, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --paper: #0e110f; --paper-2: #151916; --card: #1a1f1b;
+        --ink: #e9efea; --ink-2: #a5b0a8; --ink-3: #6f7b73; --line: #29302b;
+        --brand: #2b9d50; --brand-hover: #35b15d; --brand-soft: #16291c; --mark: #1f4a2c;
+        --star-off: #343b36; --strike: #ef7b64;
+        --t5: #4cc274; --t4: #62c983; --t3: #a7c457; --t2: #e3a744; --t1: #ef7b64;
+        --shadow-lg: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -8px rgba(0,0,0,.5), 0 32px 64px -24px rgba(0,0,0,.5);
+        --shadow-sm: 0 1px 2px rgba(0,0,0,.3), 0 4px 12px rgba(0,0,0,.25);
+        --glow: radial-gradient(closest-side, rgba(76, 194, 116, .14), transparent);
+        color-scheme: dark;
+      }
+    }
+    :root[data-theme="dark"] {
+      --paper: #0e110f; --paper-2: #151916; --card: #1a1f1b;
+      --ink: #e9efea; --ink-2: #a5b0a8; --ink-3: #6f7b73; --line: #29302b;
+      --brand: #2b9d50; --brand-hover: #35b15d; --brand-soft: #16291c; --mark: #1f4a2c;
+      --star-off: #343b36; --strike: #ef7b64;
+      --t5: #4cc274; --t4: #62c983; --t3: #a7c457; --t2: #e3a744; --t1: #ef7b64;
+      --shadow-lg: 0 1px 2px rgba(0,0,0,.4), 0 12px 32px -8px rgba(0,0,0,.5), 0 32px 64px -24px rgba(0,0,0,.5);
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.3), 0 4px 12px rgba(0,0,0,.25);
+      --glow: radial-gradient(closest-side, rgba(76, 194, 116, .14), transparent);
+      color-scheme: dark;
+    }
+
     * { box-sizing: border-box; }
-    body { margin:0; font:15px/1.7 -apple-system,"PingFang SC",Segoe UI,sans-serif; color:var(--ink); background:var(--bg); }
-    .wrap { max-width:760px; margin:0 auto; padding:0 20px; }
+    html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+    body {
+      margin: 0; background: var(--paper); color: var(--ink);
+      font: 16px/1.7 var(--sans); -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+    a { color: inherit; }
+    img { display: block; }
+    :focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; border-radius: 6px; }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 
-    header { text-align:center; padding:56px 20px 40px; }
-    header img { width:88px; height:88px; border-radius:20px; box-shadow:0 6px 20px rgba(0,0,0,.12); }
-    h1 { font-size:30px; margin:18px 0 6px; }
-    .tag { color:var(--sub); font-size:16px; margin:0; }
-    .pills { margin-top:18px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
-    .pill { font-size:13px; padding:5px 12px; border-radius:999px; background:#eaf6ee; color:var(--green); }
-    .pill.b { background:#e7f6fc; color:var(--blue); }
+    /* ---------- buttons ---------- */
+    .btn {
+      display: inline-flex; align-items: center; gap: 9px; height: 48px; padding: 0 22px;
+      border-radius: 12px; font-weight: 600; font-size: 15px; text-decoration: none; white-space: nowrap;
+      transition: background .15s, transform .12s, box-shadow .15s, border-color .15s;
+    }
+    .btn-primary { background: var(--brand); color: #fff; box-shadow: 0 6px 18px -6px rgba(0, 119, 34, .55); }
+    .btn-primary:hover { background: var(--brand-hover); transform: translateY(-1px); }
+    .btn-ghost { color: var(--ink); border: 1px solid var(--line); background: var(--card); }
+    .btn-ghost:hover { border-color: var(--ink-3); }
+    .btn-sm { height: 36px; padding: 0 14px; font-size: 13px; border-radius: 10px; }
 
-    .dl { margin-top:26px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
-    .dl-btn { display:inline-flex; align-items:center; gap:8px; text-decoration:none;
-      background:var(--green); color:#fff; font-size:15px; font-weight:600;
-      padding:12px 22px; border-radius:10px; box-shadow:0 4px 14px rgba(0,119,34,.25);
-      transition:transform .12s ease, box-shadow .12s ease; }
-    .dl-btn:hover { transform:translateY(-1px); box-shadow:0 6px 18px rgba(0,119,34,.32); }
-    .dl-btn.ghost { background:#fff; color:var(--green); border:1px solid var(--line); box-shadow:none; }
-    .dl-hint { color:var(--sub); font-size:12px; margin:12px 0 0; }
+    /* ---------- nav ---------- */
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      background: color-mix(in srgb, var(--paper) 82%, transparent);
+      backdrop-filter: saturate(1.4) blur(14px); -webkit-backdrop-filter: saturate(1.4) blur(14px);
+      border-bottom: 1px solid transparent; transition: border-color .2s;
+    }
+    .nav.scrolled { border-bottom-color: var(--line); }
+    .nav .wrap { display: flex; align-items: center; gap: 28px; height: 64px; }
+    .logo { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 15px; }
+    .logo img { width: 26px; height: 26px; }
+    .nav ul { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0; }
+    .nav ul a { display: block; padding: 6px 12px; border-radius: 8px; font-size: 14px; color: var(--ink-2); text-decoration: none; }
+    .nav ul a:hover { color: var(--ink); background: var(--paper-2); }
+    .nav .right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+    .icon-btn {
+      width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px;
+      border: 1px solid var(--line); background: var(--card); color: var(--ink-2); cursor: pointer;
+    }
+    .icon-btn:hover { color: var(--ink); }
+    .icon-btn .moon { display: none; }
+    :root[data-theme="dark"] .icon-btn .sun { display: none; }
+    :root[data-theme="dark"] .icon-btn .moon { display: block; }
 
-    section { background:#fff; border:1px solid var(--line); border-radius:14px; padding:24px 26px; margin:16px 0; }
-    h2 { font-size:18px; margin:0 0 14px; }
-    .feat { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
-    .feat div { background:var(--bg); border-radius:10px; padding:14px 16px; }
-    .feat b { display:block; margin-bottom:2px; }
-    .feat span { color:var(--sub); font-size:13px; }
-    ol { margin:0; padding-left:22px; }
-    ol li { margin:6px 0; }
-    code { background:#eef0f2; padding:2px 6px; border-radius:5px; font-size:13px; }
-    .note { background:#eaf6ee; border-left:3px solid var(--green); padding:12px 16px; border-radius:0 8px 8px 0; color:#215; font-size:14px; }
-    footer { text-align:center; color:var(--sub); font-size:13px; padding:30px 0 50px; }
-    @media (max-width:520px){ .feat{ grid-template-columns:1fr; } }
+    /* ---------- hero ---------- */
+    .hero { position: relative; padding: 72px 0 56px; }
+    .hero .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr); gap: 56px; align-items: center; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+      font-size: 13px; color: var(--ink-2); padding: 4px 12px 4px 4px; border-radius: 999px;
+      background: var(--card); border: 1px solid var(--line);
+    }
+    .eyebrow b { background: var(--brand); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+    .eyebrow:hover { border-color: var(--ink-3); }
+    h1 {
+      font: 900 clamp(52px, 7.6vw, 92px)/1.02 var(--serif); letter-spacing: -.02em;
+      margin: 22px 0 22px;
+    }
+    h1 .q { color: var(--brand); }
+    .lede { font-size: 18px; color: var(--ink-2); max-width: 30em; margin: 0 0 30px; }
+    .lede strong { color: var(--ink); font-weight: 600; }
+    .ctas { display: flex; gap: 12px; flex-wrap: wrap; }
+    .trust { display: flex; gap: 18px; flex-wrap: wrap; margin: 26px 0 0; padding: 0; list-style: none; font-size: 13px; color: var(--ink-3); }
+    .trust li { display: flex; align-items: center; gap: 6px; }
+    .trust svg { color: var(--brand); }
+
+    /* ---------- demo stage ---------- */
+    .stage { position: relative; }
+    .stage::before {
+      content: ""; position: absolute; inset: -12% -10%; background: var(--glow); z-index: -1; pointer-events: none;
+    }
+    .tabs { display: flex; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+    .tab {
+      position: relative; overflow: hidden;
+      border: 1px solid var(--line); background: var(--card); color: var(--ink-2);
+      font: 500 13px/1 var(--sans); padding: 8px 12px; border-radius: 999px; cursor: pointer;
+    }
+    .tab[aria-selected="true"] { color: var(--ink); border-color: var(--ink); }
+    .tab .prog { position: absolute; left: 0; bottom: 0; height: 2px; width: 0; background: var(--brand); }
+    .tab[aria-selected="true"] .prog { animation: prog var(--dur, 5600ms) linear forwards; }
+    .stage.paused .tab .prog { animation-play-state: paused; }
+    @keyframes prog { to { width: 100%; } }
+
+    .browser {
+      background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+      box-shadow: var(--shadow-lg); overflow: hidden;
+    }
+    .browser-bar { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: var(--paper-2); }
+    .dots { display: flex; gap: 6px; }
+    .dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+    .url {
+      flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px;
+      height: 28px; padding: 0 10px; border-radius: 8px; background: var(--card);
+      font: 12px/1 var(--num); color: var(--ink-3); white-space: nowrap; overflow: hidden;
+    }
+    .url span { overflow: hidden; text-overflow: ellipsis; }
+    .ext { position: relative; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 8px; }
+    .ext img { width: 18px; height: 18px; }
+    .ext::after {
+      content: ""; position: absolute; inset: 0; border-radius: 8px; border: 2px solid var(--brand); opacity: 0;
+    }
+    .ext.click { background: var(--brand-soft); }
+    .ext.click::after { animation: ping .7s ease-out; }
+    @keyframes ping { from { opacity: .9; transform: scale(.8); } to { opacity: 0; transform: scale(1.6); } }
+
+    .page { padding: 18px 18px 22px; min-height: 340px; }
+    .thumb {
+      aspect-ratio: 16 / 7.4; border-radius: 10px; display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--th1, #2c3a30), var(--th2, #101511));
+      transition: background .4s;
+    }
+    .thumb span {
+      width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+      background: rgba(255, 255, 255, .16); backdrop-filter: blur(4px); color: #fff;
+    }
+    .raw { margin: 16px 0 10px; font-size: 17px; font-weight: 650; line-height: 1.5; min-height: 52px; max-width: 64%; }
+    .raw .tok { transition: color .35s, opacity .35s, background-size .45s ease; border-radius: 3px; }
+    .raw .noise {
+      background: linear-gradient(var(--strike), var(--strike)) 0 55% / 0 2px no-repeat;
+    }
+    .raw .keep {
+      background: linear-gradient(var(--mark), var(--mark)) 0 88% / 0 42% no-repeat;
+    }
+    .raw.done .noise { color: var(--ink-3); opacity: .55; background-size: 100% 2px; }
+    .raw.done .keep { background-size: 100% 42%; }
+    .ghost-lines i { display: block; height: 9px; border-radius: 5px; background: var(--paper-2); margin-top: 9px; }
+    .ghost-lines i:nth-child(1) { width: 38%; }
+    .ghost-lines i:nth-child(2) { width: 52%; }
+
+    /* popup mock —— 与真实弹窗同一套样式 */
+    .pm {
+      position: absolute; right: -18px; top: 98px; width: 300px;
+      padding: 13px 13px 11px; border-radius: 14px;
+      background: var(--card); border: 1px solid var(--line); box-shadow: var(--shadow-lg);
+      font-size: 13px; line-height: 1.5;
+      transform-origin: 92% 0; transform: translateY(-6px) scale(.96); opacity: 0;
+      transition: opacity .22s ease, transform .28s cubic-bezier(.2, .9, .3, 1.2);
+    }
+    .pm.open { opacity: 1; transform: none; }
+    .pm-bar { display: flex; align-items: center; gap: 7px; margin-bottom: 10px; font-weight: 650; font-size: 12.5px; }
+    .pm-bar img { width: 16px; height: 16px; }
+    .pm-bar .host { margin-left: auto; font-size: 10.5px; font-weight: 400; color: var(--ink-3); background: var(--paper-2); padding: 1px 7px; border-radius: 999px; }
+    .pm-search {
+      display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 10px;
+      border-radius: 9px; background: var(--paper-2); color: var(--ink-3);
+    }
+    .pm-search b { color: var(--ink); font-weight: 500; font-size: 13.5px; white-space: nowrap; overflow: hidden; }
+    .pm-search b::after { content: ""; display: inline-block; width: 1.5px; height: 15px; margin-left: 1px; vertical-align: -2px; background: var(--brand); animation: blink 1s steps(1) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .pm-card {
+      display: flex; align-items: center; gap: 12px; margin-top: 10px; padding: 12px 12px 12px 14px; min-height: 78px;
+      border: 1px solid var(--line); border-radius: 12px; background: var(--card); box-shadow: var(--shadow-sm);
+    }
+    .pm-card .score-col { flex: none; width: 66px; display: flex; flex-direction: column; gap: 5px; }
+    .score { font: 700 38px/1 var(--num); letter-spacing: -.03em; font-variant-numeric: tabular-nums; color: var(--tier, var(--brand)); }
+    .stars {
+      position: relative; width: 64px; height: 11px; background: var(--star-off);
+      --star-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2.6l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.4l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z'/%3E%3C/svg%3E");
+      -webkit-mask: var(--star-mask) 0 0 / 12.8px 11px repeat-x; mask: var(--star-mask) 0 0 / 12.8px 11px repeat-x;
+    }
+    .stars i { position: absolute; inset: 0 auto 0 0; width: var(--pct, 0%); background: var(--star); transition: width .7s cubic-bezier(.2, .8, .2, 1); }
+    .pm-card .t { font-size: 14px; font-weight: 650; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .pm-card .s { display: flex; align-items: center; gap: 6px; margin-top: 2px; font-size: 11.5px; color: var(--ink-2); }
+    .verdict { font-size: 10.5px; font-weight: 600; line-height: 17px; padding: 0 7px; border-radius: 999px; color: var(--tier); background: color-mix(in srgb, var(--tier) 12%, transparent); }
+    [data-tier="5"] { --tier: var(--t5); } [data-tier="4"] { --tier: var(--t4); } [data-tier="3"] { --tier: var(--t3); } [data-tier="2"] { --tier: var(--t2); } [data-tier="1"] { --tier: var(--t1); }
+    .pm-card.loading .score, .pm-card.loading .t {
+      color: transparent; border-radius: 6px;
+      background: linear-gradient(90deg, var(--paper-2) 25%, var(--line) 50%, var(--paper-2) 75%) 0 0 / 200% 100%;
+      animation: shimmer 1.2s linear infinite;
+    }
+    .pm-card.loading .t { width: 70%; }
+    .pm-card.loading .verdict { visibility: hidden; }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+    .pm-cta {
+      display: flex; align-items: center; justify-content: center; gap: 6px; height: 34px; margin-top: 9px;
+      border-radius: 9px; background: var(--brand); color: #fff; font-weight: 600; font-size: 12.5px;
+      transition: opacity .25s;
+    }
+    .pm-card.loading + .pm-cta { opacity: .35; }
+
+    /* ---------- sites strip ---------- */
+    .sites { padding: 28px 0 8px; }
+    .sites p { text-align: center; font-size: 13px; color: var(--ink-3); margin: 0 0 14px; letter-spacing: .04em; }
+    .marquee { overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent); }
+    .marquee ul { display: flex; gap: 44px; width: max-content; list-style: none; margin: 0; padding: 0; animation: marquee 38s linear infinite; }
+    .marquee li { font-size: 18px; font-weight: 650; color: var(--ink-3); white-space: nowrap; }
+    @keyframes marquee { to { transform: translateX(-50%); } }
+
+    /* ---------- sections ---------- */
+    section.block { padding: 96px 0 0; }
+    .kicker { font-size: 13px; font-weight: 600; letter-spacing: .08em; color: var(--brand); margin: 0 0 10px; }
+    h2 { font: 700 clamp(30px, 4vw, 44px)/1.18 var(--serif); letter-spacing: -.01em; margin: 0 0 14px; }
+    .section-lede { font-size: 17px; color: var(--ink-2); max-width: 36em; margin: 0 0 40px; }
+
+    /* smart recognition */
+    .pipeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto minmax(0, 1fr); gap: 14px; align-items: stretch; }
+    .src { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px; box-shadow: var(--shadow-sm); }
+    .src h3 { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 600; letter-spacing: .06em; color: var(--ink-3); margin: 0 0 10px; }
+    .pts { font: 700 12px/1 var(--num); color: var(--brand); background: var(--brand-soft); padding: 4px 7px; border-radius: 6px; letter-spacing: 0; }
+    .pts.zero { color: var(--ink-3); background: var(--paper-2); }
+    .src p { margin: 0; font-size: 14.5px; line-height: 1.65; }
+    .src .dim { color: var(--ink-3); }
+    mark { background: var(--mark); color: inherit; padding: 0 2px; border-radius: 3px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip { font-size: 12.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-3); }
+    .chip.hit { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); font-weight: 600; }
+    .arrow { display: grid; place-items: center; color: var(--ink-3); }
+    .out {
+      background: var(--ink); color: var(--paper); border-radius: 14px; padding: 18px;
+      display: flex; flex-direction: column; justify-content: space-between; gap: 16px;
+    }
+    .out h3 { color: color-mix(in srgb, var(--paper) 60%, transparent); }
+    .out .name { font: 700 20px/1.35 var(--serif); }
+    .out .total { font: 700 13px/1 var(--num); color: var(--paper); opacity: .7; }
+
+    .rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 28px; }
+    .rule { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px; border-radius: 12px; background: var(--paper-2); }
+    .rule b { font-size: 14px; }
+    .rule code { font: 12.5px/1.5 ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink-2); }
+    .rule code s { color: var(--strike); text-decoration-thickness: 1.5px; }
+    .rule code em { font-style: normal; color: var(--brand); font-weight: 600; }
+
+    /* features bento */
+    .bento { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+    .cell { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 24px; box-shadow: var(--shadow-sm); }
+    .cell h3 { font-size: 17px; margin: 0 0 6px; }
+    .cell p { margin: 0; font-size: 14px; color: var(--ink-2); }
+    .c-lg { grid-column: span 4; display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+    .c-md { grid-column: span 2; }
+    .c-third { grid-column: span 2; }
+    .tiers { display: flex; flex-direction: column; gap: 6px; min-width: 190px; }
+    .tier-row { display: grid; grid-template-columns: 52px 1fr auto; align-items: center; gap: 10px; font-size: 13px; }
+    .tier-row .n { font: 700 15px/1 var(--num); color: var(--tier); }
+    .tier-row .bar { height: 6px; border-radius: 3px; background: var(--paper-2); overflow: hidden; }
+    .tier-row .bar i { display: block; height: 100%; width: var(--w); background: var(--tier); border-radius: 3px; }
+    .race { display: flex; flex-direction: column; gap: 7px; margin-top: 16px; }
+    .race div { display: grid; grid-template-columns: 54px 1fr; align-items: center; gap: 10px; font: 12px/1 var(--num); color: var(--ink-3); }
+    .race .track { height: 6px; border-radius: 3px; background: var(--paper-2); overflow: hidden; }
+    .race .track i { display: block; height: 100%; width: var(--w); background: var(--c, var(--ink-3)); border-radius: 3px; }
+    .race .win { color: var(--brand); font-weight: 700; }
+    .mini-alts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 16px; align-items: center; font-size: 12px; color: var(--ink-3); }
+    .big-num { font: 700 44px/1 var(--num); letter-spacing: -.03em; color: var(--brand); margin-bottom: 10px; }
+    .big-num small { font-size: 16px; color: var(--ink-3); font-weight: 600; letter-spacing: 0; margin-left: 4px; }
+    .swatch { display: flex; gap: 6px; margin-bottom: 14px; }
+    .swatch i { width: 34px; height: 34px; border-radius: 10px; border: 1px solid var(--line); }
+
+    /* how */
+    .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; counter-reset: s; position: relative; }
+    .step { position: relative; padding: 0 24px 0 0; }
+    .step::before {
+      counter-increment: s; content: counter(s);
+      display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%;
+      background: var(--card); border: 1px solid var(--line); font: 700 15px/1 var(--num); color: var(--brand);
+      position: relative; z-index: 1; margin-bottom: 16px;
+    }
+    .step::after { content: ""; position: absolute; top: 18px; left: 36px; right: 0; height: 1px; background: var(--line); }
+    .step:last-child::after { display: none; }
+    .step h3 { font-size: 17px; margin: 0 0 6px; }
+    .step p { margin: 0; font-size: 14.5px; color: var(--ink-2); }
+    .callout {
+      display: flex; gap: 16px; align-items: flex-start; margin-top: 40px; padding: 22px 24px;
+      border-radius: 16px; background: var(--brand-soft); border: 1px solid color-mix(in srgb, var(--brand) 22%, transparent);
+    }
+    .callout svg { flex: none; color: var(--brand); margin-top: 3px; }
+    .callout p { margin: 0; font-size: 15px; }
+    .callout strong { color: var(--brand); }
+
+    /* install */
+    .install { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: start; }
+    .install ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; counter-reset: i; }
+    .install li {
+      counter-increment: i; display: grid; grid-template-columns: 32px 1fr; gap: 14px; align-items: start;
+      padding: 18px 20px; border-radius: 14px; background: var(--card); border: 1px solid var(--line);
+    }
+    .install li::before { content: counter(i); font: 700 22px/1.2 var(--serif); color: var(--brand); }
+    .install li b { display: block; font-size: 15.5px; }
+    .install li span { font-size: 14px; color: var(--ink-2); }
+    .optional { font-size: 11px; font-weight: 600; color: var(--ink-3); border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; margin-left: 6px; vertical-align: 2px; }
+
+    /* faq */
+    .faq { max-width: 780px; }
+    .faq details { border-bottom: 1px solid var(--line); }
+    .faq summary {
+      list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 16px;
+      padding: 20px 2px; font-size: 16.5px; font-weight: 600;
+    }
+    .faq summary::-webkit-details-marker { display: none; }
+    .faq summary svg { flex: none; color: var(--ink-3); transition: transform .2s; }
+    .faq details[open] summary svg { transform: rotate(45deg); }
+    .faq details p { margin: -6px 0 20px; color: var(--ink-2); font-size: 15px; max-width: 40em; }
+
+    /* final */
+    .final { margin: 110px 0 0; padding: 72px 24px; text-align: center; border-radius: 28px; background: var(--ink); color: var(--paper); position: relative; overflow: hidden; }
+    .final::before { content: "9.7"; position: absolute; right: -2%; bottom: -26%; font: 900 300px/1 var(--num); letter-spacing: -.05em; color: var(--paper); opacity: .05; pointer-events: none; }
+    .final h2 { color: var(--paper); margin-bottom: 12px; }
+    .final p { color: color-mix(in srgb, var(--paper) 65%, transparent); margin: 0 0 30px; }
+    .final .btn-primary { box-shadow: none; }
+
+    footer { padding: 40px 0 56px; color: var(--ink-3); font-size: 13px; }
+    footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    footer nav { display: flex; gap: 18px; }
+    footer a { text-decoration: none; }
+    footer a:hover { color: var(--ink); }
+
+    /* reveal on scroll */
+    .reveal { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* ---------- responsive ---------- */
+    @media (max-width: 980px) {
+      .hero .wrap { grid-template-columns: 1fr; gap: 40px; }
+      .pm { right: 12px; }
+      .pipeline { grid-template-columns: 1fr 1fr; }
+      .pipeline .arrow { display: none; }
+      .pipeline .out { grid-column: span 2; }
+      .rules { grid-template-columns: 1fr 1fr; }
+      .c-lg { grid-column: span 6; }
+      .c-md, .c-third { grid-column: span 3; }
+      .install { grid-template-columns: 1fr; gap: 28px; }
+    }
+    @media (max-width: 760px) {
+      .nav ul { display: none; }
+    }
+    @media (max-width: 640px) {
+      .wrap { padding: 0 16px; }
+      .hero { padding: 44px 0 32px; }
+      .lede { font-size: 16.5px; }
+      .page { min-height: 0; padding: 14px 14px 16px; }
+      .raw { max-width: none; font-size: 15px; }
+      .pm { position: relative; right: auto; top: auto; width: auto; margin: -28px 10px 0; opacity: 1; transform: none; }
+      .tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; }
+      .tabs::-webkit-scrollbar { display: none; }
+      .tab { flex: none; }
+      .pipeline, .rules { grid-template-columns: 1fr; }
+      .pipeline .out { grid-column: auto; }
+      .c-lg { grid-template-columns: 1fr; }
+      .c-md, .c-third { grid-column: span 6; }
+      .steps { grid-template-columns: 1fr; gap: 28px; }
+      .step::after { display: none; }
+      section.block { padding-top: 72px; }
+      .final { padding: 52px 20px; border-radius: 20px; }
+      .final::before { font-size: 180px; }
+      .nav .btn-sm span { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
   </style>
 </head>
 <body>
-  <header>
-    <img src="icons/score/icon128.png" alt="插件图标" />
-    <h1>这豆瓣评分多少？</h1>
-    <p class="tag">看剧 / 看电影 / 刷解说 / 逛搜索页——点一下就知道豆瓣多少分</p>
-    <div class="pills">
-      <span class="pill b">🧩 Chrome 扩展程序</span>
-      <span class="pill">🟢 直接显示评分</span>
-      <span class="pill b">🎬 全网几乎通用</span>
-      <span class="pill">🔒 不封 IP</span>
+  <header class="nav" id="nav">
+    <div class="wrap">
+      <a class="logo" href="#top"><img src="icons/logo.svg" alt="" />这豆瓣评分多少？</a>
+      <ul>
+        <li><a href="#smart">片名识别</a></li>
+        <li><a href="#features">功能</a></li>
+        <li><a href="#how">原理</a></li>
+        <li><a href="#install">安装</a></li>
+        <li><a href="#faq">问答</a></li>
+      </ul>
+      <div class="right">
+        <button class="icon-btn" id="theme" type="button" aria-label="切换深色 / 浅色">
+          <svg class="sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+          <svg class="moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></svg>
+        </button>
+        <a class="btn btn-primary btn-sm" href="https://chromewebstore.google.com/detail/necllgpdfffbdcgenhlgoimhnjfjdkkp" target="_blank" rel="noopener">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>添加至 Chrome</span>
+        </a>
+      </div>
     </div>
-    <div class="dl">
-      <a class="dl-btn" href="https://chromewebstore.google.com/detail/necllgpdfffbdcgenhlgoimhnjfjdkkp" target="_blank" rel="noopener">🧩 前往 Chrome 应用商店安装</a>
-    </div>
-    <p class="dl-hint">已上架 Chrome 应用商店，一键添加至 Chrome 即可使用</p>
   </header>
 
-  <div class="wrap">
-    <section>
-      <h2>它能做什么</h2>
-      <div class="feat">
-        <div><b>点图标即查</b><span>读取当前网页的片名，自动去掉站名/前后缀清洗成片名</span></div>
-        <div><b>大号评分 + 直达</b><span>显示豆瓣分数，一键跳转豆瓣条目页</span></div>
-        <div><b>三家竞速</b><span>Google / Bing / 百度谁先出评分用谁</span></div>
-        <div><b>随时改词重查</b><span>弹窗自带搜索框，识别不准回车即可重查 · 缓存 7 天</span></div>
+  <main id="top">
+    <!-- ================= HERO ================= -->
+    <section class="hero">
+      <div class="wrap">
+        <div>
+          <a class="eyebrow" href="#smart"><b>v1.1</b>解说视频也认得出片名了 →</a>
+          <h1>这豆瓣<br />评分多少<span class="q">？</span></h1>
+          <p class="lede">刷解说、看预告、逛流媒体时，<strong>不用切页面，也不用复制片名</strong>。点一下插件图标，豆瓣评分直接摆在你面前。</p>
+          <div class="ctas">
+            <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/necllgpdfffbdcgenhlgoimhnjfjdkkp" target="_blank" rel="noopener">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="12" r="9.5"/><circle cx="12" cy="12" r="3.6"/><path d="M12 8.4h8.8M8.9 13.8 4.5 6.2M15.1 13.8l-4.4 7.6"/></svg>
+              添加至 Chrome · 免费
+            </a>
+            <a class="btn btn-ghost" href="#smart">看它怎么认片名</a>
+          </div>
+          <ul class="trust">
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>免登录</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>不收集数据</li>
+            <li><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>不碰豆瓣搜索接口，不封 IP</li>
+          </ul>
+        </div>
+
+        <div class="stage" id="stage" aria-label="插件演示">
+          <div class="tabs" role="tablist" id="tabs"></div>
+          <div class="browser" aria-hidden="true">
+            <div class="browser-bar">
+              <div class="dots"><i></i><i></i><i></i></div>
+              <div class="url">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>
+                <span id="dUrl"></span>
+              </div>
+              <div class="ext" id="dExt"><img src="icons/score/icon32.png" alt="" /></div>
+            </div>
+            <div class="page">
+              <div class="thumb" id="dThumb"><span><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg></span></div>
+              <div class="raw" id="dRaw"></div>
+              <div class="ghost-lines"><i></i><i></i></div>
+            </div>
+          </div>
+          <div class="pm" id="pm" aria-live="polite">
+            <div class="pm-bar"><img src="icons/score/icon32.png" alt="" />这豆瓣评分多少？<span class="host" id="pHost"></span></div>
+            <div class="pm-search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+              <b id="pQuery"></b>
+            </div>
+            <div class="pm-card loading" id="pCard">
+              <div class="score-col">
+                <div class="score" id="pScore">0.0</div>
+                <div class="stars"><i id="pStars"></i></div>
+              </div>
+              <div>
+                <div class="t" id="pTitle">&nbsp;</div>
+                <div class="s"><span>豆瓣评分</span><span class="verdict" id="pVerdict"></span></div>
+              </div>
+            </div>
+            <div class="pm-cta">在豆瓣查看
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section>
-      <h2>所有网页 · 随时都能用</h2>
-      <p>插件读的是<strong>当前页面的片名</strong>——哪儿有片名就能查。已验证可用：<strong>Bilibili、Netflix、YouTube、Google / Bing 搜索结果页</strong> 等。片名识别不准时，弹窗顶部的<strong>搜索框</strong>可随时改关键词回车重查。</p>
+    <!-- ================= SITES ================= -->
+    <div class="sites" aria-label="支持的网站">
+      <p>哪儿有片名，哪儿就能查</p>
+      <div class="marquee">
+        <ul id="marquee">
+          <li>Bilibili</li><li>YouTube</li><li>Netflix</li><li>爱奇艺</li><li>腾讯视频</li><li>优酷</li><li>Disney+</li><li>HBO Max</li><li>Prime Video</li><li>芒果TV</li><li>Google 搜索</li><li>Bing</li><li>百度</li><li>IMDb</li><li>维基百科</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ================= SMART ================= -->
+    <section class="block" id="smart">
+      <div class="wrap">
+        <p class="kicker">片名识别 · v1.1</p>
+        <h2 class="reveal">标题是「看懂结局你就赢了」<br />也认得出是哪部片。</h2>
+        <p class="section-lede reveal">很多解说视频的标题根本不写片名。插件会把<strong>标题、简介、标签</strong>放在一起看：同一个名字出现在越多地方，就越可能是你在看的那部。</p>
+
+        <div class="pipeline reveal">
+          <div class="src">
+            <h3>标题 <span class="pts zero">+0</span></h3>
+            <p class="dim">诺兰最烧脑的一部！看懂这个结局你就赢了</p>
+          </div>
+          <div class="src">
+            <h3>简介 <span class="pts">+3</span></h3>
+            <p>本期影片：<br /><mark>《盗梦空间》</mark><br /><span class="dim">BGM：《Time》 ← 歌名，跳过</span></p>
+          </div>
+          <div class="src">
+            <h3>标签 <span class="pts">+3</span></h3>
+            <div class="chips">
+              <span class="chip">科幻</span><span class="chip">电影解说</span><span class="chip hit">盗梦空间</span><span class="chip">克里斯托弗·诺兰</span>
+            </div>
+          </div>
+          <div class="arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="out">
+            <h3 style="margin:0;font-size:12px;letter-spacing:.06em;font-weight:600">拿去查</h3>
+            <div class="name">盗梦空间</div>
+            <div class="total">命中 2 处 · 6 分</div>
+          </div>
+        </div>
+
+        <div class="rules reveal">
+          <div class="rule"><b>剥掉站名外壳</b><code><em>Spirited Away</em> <s>| Netflix</s></code></div>
+          <div class="rule"><b>去掉宣发词</b><code><em>Interstellar</em> <s>Official Teaser Trailer</s></code></div>
+          <div class="rule"><b>集数不算片名</b><code>《<em>老友记</em>》<s>1-10集全</s></code></div>
+          <div class="rule"><b>季数保留</b><code>《<em>权力的游戏</em>》<em>第八季</em><s>正式预告</s></code></div>
+          <div class="rule"><b>中外双名一起搜，按年份核对</b><code><em>最后一案 El problema final</em> (<em>2026</em>) <s>中文字幕</s></code></div>
+          <div class="rule"><b>认错了？一键换</b><code>也可能是：<em>候选 A</em> · <em>候选 B</em></code></div>
+        </div>
+      </div>
     </section>
 
-    <section>
-      <h2>获取评分的方式安全吗</h2>
-      <p>豆瓣的<strong>搜索接口</strong>对海外 IP 限流极狠，所以本插件<strong>不碰豆瓣搜索</strong>。评分优先从搜索引擎摘要里读；只有当摘要没评分、却已经拿到豆瓣<strong>条目 id</strong> 时，才去读那<strong>一个条目页</strong>取分。</p>
-      <div class="note">所有网络请求只在你<strong>打开插件那一刻</strong>发生，浏览页面时零请求。豆瓣接触量 ≈ 你手动点开一次。</div>
+    <!-- ================= FEATURES ================= -->
+    <section class="block" id="features">
+      <div class="wrap">
+        <p class="kicker">功能</p>
+        <h2 class="reveal">一眼就够了。</h2>
+        <p class="section-lede reveal">弹窗只放你需要的：分数、星级、一句话结论，和一个去豆瓣的按钮。</p>
+
+        <div class="bento">
+          <div class="cell c-lg reveal">
+            <div>
+              <h3>分数会说话</h3>
+              <p>大号评分 + 豆瓣星级，再加一句人话结论。颜色随分数变化，扫一眼就知道值不值得看。</p>
+            </div>
+            <div class="tiers" aria-label="评分档位">
+              <div class="tier-row" data-tier="5"><span class="n">9.0+</span><span class="bar"><i style="--w:100%"></i></span><span class="verdict">封神</span></div>
+              <div class="tier-row" data-tier="4"><span class="n">8.0+</span><span class="bar"><i style="--w:82%"></i></span><span class="verdict">好看</span></div>
+              <div class="tier-row" data-tier="3"><span class="n">7.0+</span><span class="bar"><i style="--w:64%"></i></span><span class="verdict">还行</span></div>
+              <div class="tier-row" data-tier="2"><span class="n">6.0+</span><span class="bar"><i style="--w:46%"></i></span><span class="verdict">一般</span></div>
+              <div class="tier-row" data-tier="1"><span class="n">&lt; 6</span><span class="bar"><i style="--w:28%"></i></span><span class="verdict">慎入</span></div>
+            </div>
+          </div>
+          <div class="cell c-md reveal">
+            <h3>三家同时问</h3>
+            <p>Google、Bing、百度一起查，用最先拿到的结果。海外、国内都快。</p>
+            <div class="race" aria-hidden="true">
+              <div><span class="win">Google</span><span class="track"><i style="--w:100%;--c:var(--brand)"></i></span></div>
+              <div><span>Bing</span><span class="track"><i style="--w:72%"></i></span></div>
+              <div><span>百度</span><span class="track"><i style="--w:58%"></i></span></div>
+            </div>
+          </div>
+          <div class="cell c-third reveal">
+            <h3>认错了？点一下换</h3>
+            <p>输入框可改，回车重查；下方还会给出其他候选片名。</p>
+            <div class="mini-alts" aria-hidden="true">也可能是<span class="chip">候选 A</span><span class="chip">候选 B</span></div>
+          </div>
+          <div class="cell c-third reveal">
+            <div class="big-num">7<small>天</small></div>
+            <h3>本地缓存</h3>
+            <p>同一部片 7 天内秒开，不重复请求。缓存只存在你自己的浏览器里。</p>
+          </div>
+          <div class="cell c-third reveal">
+            <div class="swatch" aria-hidden="true"><i style="background:#ffffff"></i><i style="background:#141715"></i></div>
+            <h3>深色模式</h3>
+            <p>跟随系统自动切换，深夜看剧不刺眼。</p>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section>
-      <h2>安装</h2>
-      <ol>
-        <li>点上方 <strong>前往 Chrome 应用商店安装</strong>，进入这个 Chrome extension 的商店页</li>
-        <li>点右上角 <strong>「添加至 Chrome」</strong>，在弹窗里确认 <strong>「添加扩展程序」</strong></li>
-        <li>（可选）点 Chrome 工具栏的拼图图标，把「这豆瓣评分多少？」<strong>固定</strong>到工具栏，方便随时点</li>
-        <li>打开任意带片名的页面（Netflix / YouTube / 爱奇艺 / Bilibili / Google 搜索…），点右上角插件图标</li>
-      </ol>
+    <!-- ================= HOW ================= -->
+    <section class="block" id="how">
+      <div class="wrap">
+        <p class="kicker">原理</p>
+        <h2 class="reveal">为什么不会被封 IP。</h2>
+        <p class="section-lede reveal">豆瓣的搜索接口对海外 IP 限流很严（常见「搜索访问太频繁」），所以插件从头到尾<strong>不碰豆瓣搜索</strong>。</p>
+
+        <div class="steps reveal">
+          <div class="step">
+            <h3>你点了图标</h3>
+            <p>在这之前插件什么都不做。浏览网页期间零请求。</p>
+          </div>
+          <div class="step">
+            <h3>问搜索引擎</h3>
+            <p>用片名去 Google / Bing / 百度 搜，从结果摘要里读豆瓣评分和条目链接。</p>
+          </div>
+          <div class="step">
+            <h3>最多读一个条目页</h3>
+            <p>拿到条目后读<strong>那一页</strong>核对官方分数，结果缓存 7 天。</p>
+          </div>
+        </div>
+
+        <div class="callout reveal">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 4.5 3.4 8.3 8 9 4.6-.7 8-4.5 8-9V6l-8-3z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></svg>
+          <p>对豆瓣来说，这和你<strong>手动点开一次条目页</strong>没有区别。插件没有自己的服务器，不收集、不上传你的浏览记录。<a href="privacy.html">隐私政策 →</a></p>
+        </div>
+      </div>
     </section>
 
-  </div>
+    <!-- ================= INSTALL ================= -->
+    <section class="block" id="install">
+      <div class="wrap install">
+        <div>
+          <p class="kicker">安装</p>
+          <h2 class="reveal">30 秒装好。</h2>
+          <p class="section-lede reveal" style="margin-bottom:28px">已上架 Chrome 应用商店。Edge、Arc、Brave 等 Chromium 内核浏览器同样可以从商店安装。</p>
+          <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/necllgpdfffbdcgenhlgoimhnjfjdkkp" target="_blank" rel="noopener">前往 Chrome 应用商店</a>
+        </div>
+        <ol class="reveal">
+          <li><div><b>打开商店页</b><span>点左边的按钮，进入「这豆瓣评分多少？」的商店页面。</span></div></li>
+          <li><div><b>添加至 Chrome</b><span>点右上角「添加至 Chrome」，在弹窗里确认「添加扩展程序」。</span></div></li>
+          <li><div><b>固定到工具栏<span class="optional">推荐</span></b><span>点工具栏的拼图图标，把插件钉住，随时一点即查。</span></div></li>
+        </ol>
+      </div>
+    </section>
 
-  <footer>数据来自公开搜索结果与豆瓣页面<br>Made by Happy</footer>
+    <!-- ================= FAQ ================= -->
+    <section class="block" id="faq">
+      <div class="wrap">
+        <p class="kicker">问答</p>
+        <h2 class="reveal">常见问题</h2>
+        <div class="faq">
+          <details>
+            <summary>为什么有时会提示「可能不是《…》」？<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+            <p>搜到的豆瓣条目和你的片名对不上时（比如「逃出绝命镇」和「逃出绝命街」），或者标题里写着 2026 年、条目却是多年前的同名片，插件会按豆瓣官方的「中文名 · 原名」显示结果，同时提醒你。改一下搜索框或点「也可能是」里的候选即可。</p>
+          </details>
+          <details>
+            <summary>识别出来的片名不对怎么办？<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+            <p>弹窗打开时片名已经被选中，直接输入新的片名回车就行。也可以点下方的百度 / 豆瓣 / Google / Bing 手动搜索。</p>
+          </details>
+          <details>
+            <summary>在国内能用吗？<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+            <p>能。三家搜索引擎同时查询，Google 访问不了时会自动用 Bing 或百度的结果。</p>
+          </details>
+          <details>
+            <summary>会读取或上传我的浏览记录吗？<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+            <p>不会。插件只在你点图标的那一刻读取当前页面的标题、简介和标签，用来判断片名；片名直接从你的浏览器发给搜索引擎。没有开发者服务器，详见<a href="privacy.html">隐私政策</a>。</p>
+          </details>
+          <details>
+            <summary>哪些页面认得最准？<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></summary>
+            <p>流媒体详情页、搜索结果页、B 站正片和解说视频、YouTube 预告片最准。番剧分季、冷门译名、竖屏短视频偶尔需要手动改一下片名。</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= FINAL CTA ================= -->
+    <div class="wrap">
+      <section class="final reveal">
+        <h2>下一部看什么之前，<br />先问一句。</h2>
+        <p>免费 · 免登录 · 点一下就有分</p>
+        <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/necllgpdfffbdcgenhlgoimhnjfjdkkp" target="_blank" rel="noopener">添加至 Chrome</a>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap">
+      <span>Made by Happy · 数据来自公开搜索结果与豆瓣页面，本插件与豆瓣无官方关联</span>
+      <nav>
+        <a href="privacy.html">隐私政策</a>
+        <a href="https://github.com/huanshuowang/douban-rating-ext" target="_blank" rel="noopener">GitHub</a>
+      </nav>
+    </div>
+  </footer>
+
+  <script>
+    // ---------- theme ----------
+    (() => {
+      const root = document.documentElement;
+      let saved = null;
+      try { saved = localStorage.getItem("theme"); } catch (_) {}
+      if (saved === "light" || saved === "dark") root.dataset.theme = saved;
+      const isDark = () => root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+      if (!root.dataset.theme) root.dataset.theme = isDark() ? "dark" : "light";
+      document.getElementById("theme").addEventListener("click", () => {
+        root.dataset.theme = isDark() ? "light" : "dark";
+        try { localStorage.setItem("theme", root.dataset.theme); } catch (_) {}
+      });
+    })();
+
+    // ---------- nav border on scroll ----------
+    const nav = document.getElementById("nav");
+    addEventListener("scroll", () => nav.classList.toggle("scrolled", scrollY > 8), { passive: true });
+
+    // ---------- marquee: duplicate list for seamless loop ----------
+    const mq = document.getElementById("marquee");
+    mq.innerHTML += mq.innerHTML.replace(/<li>/g, '<li aria-hidden="true">');
+
+    // ---------- reveal ----------
+    const io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+    }), { rootMargin: "0px 0px -8% 0px" });
+    document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+    // ---------- hero demo ----------
+    const DEMOS = [
+      { tab: "B站解说", host: "bilibili.com", url: "bilibili.com/video/BV1x…", th: ["#3b2a4a", "#130e18"],
+        raw: [["【4K修复】", 0], ["一口气看完", 0], ["《霸王别姬》", 1], ["张国荣封神之作", 0]],
+        query: "霸王别姬", name: "霸王别姬", score: "9.6" },
+      { tab: "YouTube 预告", host: "youtube.com", url: "youtube.com/watch?v=…", th: ["#1d2e44", "#0a0f17"],
+        raw: [["Interstellar", 1], [" | Official Teaser Trailer", 0], [" | HD", 0]],
+        query: "Interstellar", name: "星际穿越 · Interstellar", score: "9.4" },
+      { tab: "流媒体", host: "netflix.com", url: "netflix.com/title/…", th: ["#40261c", "#140b08"],
+        raw: [["Watch ", 0], ["Spirited Away", 1], [" | Netflix", 0]],
+        query: "Spirited Away", name: "千与千寻 · 千と千尋の神隠し", score: "9.4" },
+      { tab: "搜索结果", host: "google.com", url: "google.com/search?q=…", th: ["#24382c", "#0b120d"],
+        raw: [["肖申克的救赎", 1], [" - Google 搜索", 0]],
+        query: "肖申克的救赎", name: "肖申克的救赎 · The Shawshank Redemption", score: "9.7" },
+    ];
+    const DUR = 5600;
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const $ = (id) => document.getElementById(id);
+    const stage = $("stage"), tabsEl = $("tabs");
+    stage.style.setProperty("--dur", DUR + "ms");
+    let idx = 0, timers = [], cycle = 0, raf = 0;
+
+    DEMOS.forEach((d, i) => {
+      const b = document.createElement("button");
+      b.className = "tab"; b.type = "button"; b.setAttribute("role", "tab");
+      b.innerHTML = d.tab + '<span class="prog"></span>';
+      b.addEventListener("click", () => play(i));
+      tabsEl.appendChild(b);
+    });
+
+    const tierOf = (r) => (r >= 9 ? [5, "封神"] : r >= 8 ? [4, "好看"] : r >= 7 ? [3, "还行"] : r >= 6 ? [2, "一般"] : [1, "慎入"]);
+    const later = (ms, fn) => timers.push(setTimeout(fn, reduce ? 0 : ms));
+
+    function play(i) {
+      timers.forEach(clearTimeout); timers = []; clearTimeout(cycle); cancelAnimationFrame(raf);
+      idx = i;
+      const d = DEMOS[i];
+      [...tabsEl.children].forEach((t, k) => {
+        t.setAttribute("aria-selected", k === i);
+        const p = t.querySelector(".prog"); p.style.animation = "none"; p.offsetWidth; p.style.animation = "";
+      });
+
+      // 页面
+      $("dUrl").textContent = d.url;
+      $("dThumb").style.setProperty("--th1", d.th[0]);
+      $("dThumb").style.setProperty("--th2", d.th[1]);
+      const raw = $("dRaw");
+      raw.className = "raw";
+      raw.innerHTML = "";
+      d.raw.forEach(([t, keep]) => {
+        const s = document.createElement("span");
+        s.className = "tok " + (keep ? "keep" : "noise");
+        s.textContent = t;
+        raw.appendChild(s);
+      });
+
+      // 弹窗复位
+      const pm = $("pm"), card = $("pCard");
+      pm.classList.remove("open");
+      card.className = "pm-card loading"; delete card.dataset.tier;
+      $("pHost").textContent = d.host;
+      $("pQuery").textContent = "";
+      $("pScore").textContent = "0.0";
+      $("pStars").style.setProperty("--pct", "0%");
+      $("pTitle").textContent = " ";
+      $("pVerdict").textContent = "";
+
+      later(500, () => { $("dExt").classList.remove("click"); void $("dExt").offsetWidth; $("dExt").classList.add("click"); });
+      later(850, () => { pm.classList.add("open"); raw.classList.add("done"); });
+      // 打字
+      [...d.query].forEach((_, k) => later(1150 + k * (d.query.length > 8 ? 45 : 70), () => { $("pQuery").textContent = d.query.slice(0, k + 1); }));
+      later(2100, () => {
+        const [tier, verdict] = tierOf(parseFloat(d.score));
+        card.className = "pm-card"; card.dataset.tier = tier;
+        $("pTitle").textContent = d.name;
+        $("pVerdict").textContent = verdict;
+        $("pStars").style.setProperty("--pct", parseFloat(d.score) * 10 + "%");
+        const end = parseFloat(d.score), t0 = performance.now();
+        const step = (now) => {
+          const k = reduce ? 1 : Math.min(1, (now - t0) / 600);
+          $("pScore").textContent = (end * (1 - Math.pow(1 - k, 3))).toFixed(1);
+          if (k < 1) raf = requestAnimationFrame(step);
+        };
+        raf = requestAnimationFrame(step);
+      });
+      if (!reduce) cycle = setTimeout(() => play((idx + 1) % DEMOS.length), DUR);
+    }
+
+    // 不在视口里时暂停，省电也省注意力
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting) { stage.classList.remove("paused"); play(idx); }
+      else { stage.classList.add("paused"); timers.forEach(clearTimeout); clearTimeout(cycle); }
+    }).observe(stage);
+  </script>
 </body>
 </html>
