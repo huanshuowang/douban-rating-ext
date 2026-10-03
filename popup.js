@@ -373,10 +373,30 @@ function parseSubject(html) {
   const unrated = !rating && /暂无评分|尚未上映|还未上映|评价人数不足/.test(text);
   return { rating, name, original, year, aliases, unrated };
 }
-function fetchDoubanSubject(id) {
-  return fetchText("https://movie.douban.com/subject/" + id + "/")
-    .then((html) => parseSubject(html))
-    .catch(() => ({ failed: true }));
+// 豆瓣有时会把请求转去 sec.douban.com 做“人机验证”。浏览器里打开会自动通过，
+// 但插件的后台请求过不去 —— 要识别出来，提示用户打开一次条目页，而不是含糊地说“没读到分数”。
+const isDoubanPage = (html) => /property="v:itemreviewed"|<title>[^<]*\(豆瓣\)\s*<\/title>/.test(html);
+async function fetchDoubanSubject(id) {
+  const url = "https://movie.douban.com/subject/" + id + "/";
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT);
+  try {
+    // 先不跟随跳转：被转去验证页时，能明确知道是“被拦”而不是网络错误
+    const r = await fetch(url, { signal: ctrl.signal, credentials: "include", redirect: "manual" });
+    if (r.type === "opaqueredirect" || (r.status >= 300 && r.status < 400)) {
+      // 也可能是条目合并后的正常跳转：跟随一次，拿到的是条目页就照常解析
+      const r2 = await fetch(url, { signal: ctrl.signal, credentials: "include" }).catch(() => null);
+      const html2 = r2 ? await r2.text() : "";
+      return r2 && !/sec\.douban\.com/.test(r2.url) && isDoubanPage(html2) ? parseSubject(html2) : { blocked: true };
+    }
+    const html = await r.text();
+    if (/sec\.douban\.com/.test(r.url) || !isDoubanPage(html)) return { blocked: true };
+    return parseSubject(html);
+  } catch (_) {
+    return { failed: true };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // 片名与查询词是否明显对不上（如“逃出绝命街”≠“逃出绝命镇”）
@@ -417,11 +437,11 @@ async function resolve(q, year) {
   // 必须“正向对得上”：英文查询 + 中文摘要名（如“相关搜索 豆瓣评分 9.0”）不再放行
   const matched = pairs.find((p) => !junk(p.name) && nameMatches(q, p.name)) || null;
 
-  let rating = null, name = null, original = "", subYear = "", aliases = "", unrated = false, failed = false;
+  let rating = null, name = null, original = "", subYear = "", aliases = "", unrated = false, failed = false, blocked = false;
 
   if (id) {
     const sub = await fetchDoubanSubject(id); // 官方数据最准
-    if (!sub.failed) {
+    if (!sub.failed && !sub.blocked) {
       name = sub.name || null;
       aliases = sub.aliases || "";
       original = sub.original || "";
@@ -432,6 +452,8 @@ async function resolve(q, year) {
       // 条目页读不到：只信“与查询词匹配”的摘要评分，绝不用别的电影的分
       rating = matched.rating;
       name = matched.name;
+    } else if (sub.blocked) {
+      blocked = true; // 豆瓣要求人机验证，摘要里也没有对得上的分
     } else {
       failed = true; // 有条目但读不到分、摘要也没匹配的分
     }
@@ -440,7 +462,7 @@ async function resolve(q, year) {
     name = matched.name;
   }
 
-  return { rating, id, name, original, year: subYear, aliases, unrated, failed };
+  return { rating, id, name, original, year: subYear, aliases, unrated, failed, blocked };
 }
 
 // ---------- UI ----------
@@ -523,6 +545,8 @@ function showResult(query, res, hintYear) {
     renderCard("rated", { score: rating, pct: parseFloat(rating) * 10, title: name, sub: "豆瓣评分", tier, verdict });
   } else if (res && res.unrated) {
     renderCard("na", { title: name, sub: "豆瓣暂无评分（未上映或评价人数不足）" });
+  } else if (res && res.blocked) {
+    renderCard("na", { title: name, sub: "豆瓣要求先验证一下" });
   } else if (id) {
     renderCard("na", { title: name, sub: "找到了条目，但没读到分数" });
   } else {
@@ -533,6 +557,11 @@ function showResult(query, res, hintYear) {
   const yearOff = hintYear && res && res.year && Math.abs(+hintYear - +res.year) > 1;
   const mismatch = (rating || (res && res.unrated)) && (yearOff ||
     (res.aliases ? !nameMatches(query, res.aliases) : looksMismatch(query, res && res.name)));
+  if (res && res.blocked) {
+    setWarn("点下方按钮打开豆瓣页面，通过验证后再点一次插件，就能直接出分了。通常验证一次，之后一段时间都不用再验");
+    setOpen(url, "打开豆瓣验证", false);
+    return;
+  }
   setWarn(mismatch ? "豆瓣上最接近的是《" + name + "》，可能不是「" + query + "」" : "");
   setOpen(url, id ? "在豆瓣查看" : "去豆瓣搜索", !id);
 }
@@ -547,14 +576,15 @@ async function lookup(q) {
   setOpen(null);
   renderCard("loading", { sub: "正在问 Google · Bing · 百度…" });
 
-  const key = "db6:" + q + (year ? "|" + year : ""); // 升版失效旧缓存（此前可能存了误抓的评分）
+  const key = "db7:" + q + (year ? "|" + year : ""); // 升版失效旧缓存（此前可能存了误抓的评分）
   const cached = (await chrome.storage.local.get(key))[key];
   if (cached && Date.now() - cached.t < CACHE_TTL) {
     if (seq === lookupSeq) showResult(q, cached.v, year);
     return;
   }
   const res = await resolve(q, year);
-  await chrome.storage.local.set({ [key]: { t: Date.now(), v: res } });
+  // 只缓存确定的结果（有分 / 暂无评分）；被拦、没找到、读取失败下次重新查
+  if (res.rating || res.unrated) await chrome.storage.local.set({ [key]: { t: Date.now(), v: res } });
   if (seq === lookupSeq) showResult(q, res, year);
 }
 

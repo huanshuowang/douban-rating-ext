@@ -131,6 +131,34 @@
   .step b { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: var(--card); color: var(--brand); font: 700 15px var(--num); }
   .step div { font-size: 19px; color: var(--ink-2); line-height: 1.5; padding-top: 3px; }
   .step strong { color: var(--ink); }
+
+  /* promo tiles */
+  .tile, .marquee { position: relative; overflow: hidden; background: var(--paper); }
+  body:not(.all) .tile, body:not(.all) .marquee { display: none; }
+  body:not(.all) .tile.on, body:not(.all) .marquee.on { display: block; }
+  .glow { position: absolute; border-radius: 50%; background: radial-gradient(closest-side, rgba(0,119,34,.16), transparent); pointer-events: none; }
+  .namebar { display: flex; align-items: center; gap: 7px; font-weight: 700; color: var(--ink); }
+  .namebar img { display: block; }
+  .sites { display: flex; flex-wrap: wrap; gap: 5px; }
+  .sites span { font-weight: 600; color: var(--ink-2); background: var(--card); border: 1px solid var(--line); border-radius: 999px; }
+  .sites span.more { color: var(--ink-3); border-style: dashed; }
+  /* mini browser (scaled by --k) */
+  .mb { position: absolute; background: var(--card); border: 1px solid var(--line); border-radius: calc(12px * var(--k)); box-shadow: 0 1px 2px rgba(17,24,19,.05), 0 14px 32px -12px rgba(17,24,19,.25); overflow: visible; }
+  .mb-bar { display: flex; align-items: center; gap: calc(6px * var(--k)); padding: calc(7px * var(--k)) calc(8px * var(--k)); background: var(--paper-2); border-bottom: 1px solid var(--line); border-radius: calc(12px * var(--k)) calc(12px * var(--k)) 0 0; }
+  .mb-dots { display: flex; gap: calc(4px * var(--k)); } .mb-dots i { width: calc(6px * var(--k)); height: calc(6px * var(--k)); border-radius: 50%; background: #d9ddd6; }
+  .mb-url { flex: 1; height: calc(18px * var(--k)); border-radius: calc(5px * var(--k)); background: var(--card); font: calc(9px * var(--k)) / calc(18px * var(--k)) var(--num); color: var(--ink-3); padding: 0 calc(7px * var(--k)); white-space: nowrap; overflow: hidden; }
+  .mb-ext { position: relative; width: calc(20px * var(--k)); height: calc(20px * var(--k)); border-radius: calc(6px * var(--k)); display: grid; place-items: center; background: var(--brand-soft); box-shadow: 0 0 0 calc(1.5px * var(--k)) var(--brand); }
+  .mb-ext img { width: calc(13px * var(--k)); height: calc(13px * var(--k)); }
+  .mb-page { padding: calc(9px * var(--k)); }
+  .mb-thumb { height: calc(60px * var(--k)); border-radius: calc(7px * var(--k)); background: linear-gradient(135deg, var(--th1), var(--th2)); }
+  .mb-title { margin-top: calc(7px * var(--k)); font-size: calc(10.5px * var(--k)); font-weight: 650; line-height: 1.4; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mb-line { height: calc(5px * var(--k)); border-radius: 3px; background: var(--paper-2); margin-top: calc(5px * var(--k)); }
+  .cursor { position: absolute; width: calc(15px * var(--k)); height: calc(15px * var(--k)); filter: drop-shadow(0 1px 1px rgba(0,0,0,.3)); }
+  .pop { position: absolute; background: var(--card); border: 1px solid var(--line); border-radius: calc(10px * var(--k)); box-shadow: 0 2px 4px rgba(17,24,19,.06), 0 16px 36px -10px rgba(17,24,19,.32); padding: calc(9px * var(--k)) calc(10px * var(--k)); display: flex; align-items: center; gap: calc(9px * var(--k)); }
+  .pop .score { font-size: calc(30px * var(--k)); }
+  .pop .stars { width: calc(52px * var(--k)); height: calc(9px * var(--k)); -webkit-mask-size: calc(10.4px * var(--k)) calc(9px * var(--k)); margin-top: calc(4px * var(--k)); }
+  .pop .t { font-size: calc(11.5px * var(--k)); white-space: nowrap; }
+  .pop .verdict { font-size: calc(9.5px * var(--k)); line-height: calc(15px * var(--k)); padding: 0 calc(6px * var(--k)); display: inline-block; margin-top: calc(3px * var(--k)); }
 </style>
 </head>
 <body>
@@ -277,9 +305,55 @@
   <div class="brandline"><img src="../icons/logo.svg" alt="" />这豆瓣评分多少？<span>Chrome 扩展</span></div>
 </section>
 
+<!-- 小宣传图 440x280 -->
+<section class="tile" data-s="tile" style="width:440px;height:280px">
+  <div class="glow" style="right:-150px;top:-150px;width:460px;height:460px"></div>
+  <div style="position:absolute;left:26px;top:26px;width:205px">
+    <div class="namebar" style="font-size:13px"><img src="../icons/logo.svg" alt="" style="width:18px;height:18px" />这豆瓣评分多少？</div>
+    <h2 style="font:900 31px/1.18 var(--serif);margin:18px 0 10px;letter-spacing:-.01em">任何网页<br />一键查<em style="font-style:normal;color:var(--brand)">豆瓣分</em></h2>
+    <p style="margin:0 0 14px;font-size:13px;color:var(--ink-2);font-weight:600">电影 · 电视剧 · 综艺 · 动漫</p>
+    <div class="sites" style="gap:4px;flex-wrap:nowrap"><span style="font-size:10px;padding:2px 6px">B站</span><span style="font-size:10px;padding:2px 6px">YouTube</span><span style="font-size:10px;padding:2px 6px">Netflix</span><span style="font-size:10px;padding:2px 6px">搜索页</span></div>
+  </div>
+  <div class="mb" style="--k:1.05;left:232px;top:52px;width:196px;z-index:1;--th1:#3b2a4a;--th2:#130e18">
+    <div class="mb-bar"><div class="mb-dots"><i></i><i></i><i></i></div><div class="mb-url">bilibili.com/video/…</div><div class="mb-ext"><img src="../icons/logo.svg" alt="" /></div></div>
+    <div class="mb-page"><div class="mb-thumb"></div><div class="mb-title">一口气看完《霸王别姬》</div><div class="mb-line" style="width:60%"></div><div class="mb-line" style="width:42%"></div></div>
+    <div class="pop" style="right:-10px;top:30px"><div><div class="score">9.6</div><div class="stars"><i style="width:96%"></i></div></div><div><div class="t">霸王别姬</div><span class="verdict">封神</span></div></div>
+    <svg class="cursor" viewBox="0 0 16 16" style="right:calc(2px * 1.05);top:calc(16px * 1.05)"><path d="M2 1.5v12l3.3-3 2.2 5 2.3-1-2.2-4.9H12z" fill="#111813" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg>
+  </div>
+</section>
+
+<!-- 大宣传图 1400x560 -->
+<section class="marquee" data-s="marquee" style="width:1400px;height:560px">
+  <div class="glow" style="right:-260px;top:-360px;width:1200px;height:1200px"></div>
+  <div style="position:absolute;left:84px;top:0;bottom:0;width:620px;display:flex;flex-direction:column;justify-content:center">
+    <div class="namebar" style="font-size:20px"><img src="../icons/logo.svg" alt="" style="width:28px;height:28px" />这豆瓣评分多少？<span style="font-weight:400;color:var(--ink-3);font-size:16px;margin-left:6px">Chrome 扩展</span></div>
+    <h2 style="font:900 58px/1.16 var(--serif);margin:26px 0 18px;letter-spacing:-.015em">在任何网页，<br />点一下就知道<em style="font-style:normal;color:var(--brand)">豆瓣几分</em></h2>
+    <p style="margin:0 0 26px;font-size:20px;line-height:1.6;color:var(--ink-2)">看电影、追剧、刷解说时，不用复制片名、不用切页面。<br />电影、电视剧、综艺、动漫，中英文片名都认得。</p>
+    <div class="sites" style="gap:6px"><span style="font-size:15px;padding:4px 13px">Bilibili</span><span style="font-size:15px;padding:4px 13px">YouTube</span><span style="font-size:15px;padding:4px 13px">Netflix</span><span style="font-size:15px;padding:4px 13px">爱奇艺</span><span style="font-size:15px;padding:4px 13px">腾讯视频</span><span style="font-size:15px;padding:4px 13px">Google 搜索</span><span class="more" style="font-size:15px;padding:4px 13px">任何带片名的页面</span></div>
+  </div>
+  <div class="mb" style="--k:1.4;left:770px;top:56px;width:290px;z-index:1;--th1:#1d2e44;--th2:#0a0f17">
+    <div class="mb-bar"><div class="mb-dots"><i></i><i></i><i></i></div><div class="mb-url">youtube.com/watch?v=…</div><div class="mb-ext"><img src="../icons/logo.svg" alt="" /></div></div>
+    <div class="mb-page"><div class="mb-thumb"></div><div class="mb-title">Interstellar | Official Trailer</div><div class="mb-line" style="width:60%"></div><div class="mb-line" style="width:42%"></div></div>
+    <div class="pop" style="left:-46px;top:128px"><div><div class="score">9.4</div><div class="stars"><i style="width:94%"></i></div></div><div><div class="t">星际穿越</div><span class="verdict">封神</span></div></div>
+    
+  </div>
+  <div class="mb" style="--k:1.4;left:1090px;top:250px;width:280px;z-index:2;--th1:#40261c;--th2:#140b08">
+    <div class="mb-bar"><div class="mb-dots"><i></i><i></i><i></i></div><div class="mb-url">netflix.com/title/…</div><div class="mb-ext"><img src="../icons/logo.svg" alt="" /></div></div>
+    <div class="mb-page"><div class="mb-thumb"></div><div class="mb-title">Watch Spirited Away | Netflix</div><div class="mb-line" style="width:60%"></div><div class="mb-line" style="width:42%"></div></div>
+    <div class="pop" style="right:-14px;top:150px"><div><div class="score">9.4</div><div class="stars"><i style="width:94%"></i></div></div><div><div class="t">千与千寻</div><span class="verdict">封神</span></div></div>
+    
+  </div>
+  <div class="mb" style="--k:1.7;left:900px;top:140px;width:330px;z-index:3;--th1:#3b2a4a;--th2:#130e18">
+    <div class="mb-bar"><div class="mb-dots"><i></i><i></i><i></i></div><div class="mb-url">bilibili.com/video/…</div><div class="mb-ext"><img src="../icons/logo.svg" alt="" /></div></div>
+    <div class="mb-page"><div class="mb-thumb"></div><div class="mb-title">【4K修复】一口气看完《霸王别姬》</div><div class="mb-line" style="width:60%"></div><div class="mb-line" style="width:42%"></div></div>
+    <div class="pop" style="right:-40px;top:40px"><div><div class="score">9.6</div><div class="stars"><i style="width:96%"></i></div></div><div><div class="t">霸王别姬</div><span class="verdict">封神</span></div></div>
+    <svg class="cursor" viewBox="0 0 16 16" style="right:calc(2px * 1.7);top:calc(16px * 1.7)"><path d="M2 1.5v12l3.3-3 2.2 5 2.3-1-2.2-4.9H12z" fill="#111813" stroke="#fff" stroke-width="1.2" stroke-linejoin="round"/></svg>
+  </div>
+</section>
+
 <script>
   const s = new URLSearchParams(location.search).get("s");
-  if (s) document.querySelector('.slide[data-s="' + s + '"]').classList.add("on");
+  if (s) document.querySelector('[data-s="' + s + '"]').classList.add("on");
   else document.body.classList.add("all");
 </script>
 </body>

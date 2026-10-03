@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "这豆瓣评分多少？",
+  "name": "这豆瓣评分多少？- 电影/电视剧评分一键查 · Douban Movie & TV Rating",
   "version": "1.1.0",
-  "description": "看剧/看电影/刷解说/逛搜索页，点一下就知道豆瓣多少分。任何带片名的页面都能用。",
+  "description": "看电影、追剧、刷 B 站解说、逛 Netflix / YouTube 时，点一下就显示豆瓣评分，一键直达豆瓣条目。电影、电视剧、综艺、动漫都能查，中英文片名都认得。",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": [
     "https://www.google.com/*",
