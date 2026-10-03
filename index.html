@@ -253,6 +253,58 @@
     .marquee li { font-size: 18px; font-weight: 650; color: var(--ink-3); white-space: nowrap; }
     @keyframes marquee { to { transform: translateX(-50%); } }
 
+    /* ---------- film (no player chrome: just the picture + two quiet buttons) ---------- */
+    .film { padding: 64px 0 0; }
+    .film-frame { position: relative; aspect-ratio: 16 / 9; container-type: inline-size; }
+    /* the install button drawn in the last scene becomes a real link (coords in film pixels / 1920×1080) */
+    .film-cta {
+      position: absolute; left: 28.59%; top: 78.24%; width: 27.34%; height: 7.5%;
+      border-radius: calc(18 / 1920 * 100cqw); visibility: hidden; pointer-events: none;
+      transition: background .15s;
+    }
+    .film-frame.cta-on .film-cta { visibility: visible; pointer-events: auto; cursor: pointer; }
+    .film-cta:hover { background: rgba(0, 0, 0, .1); }
+    .film-cta:focus-visible { outline: 3px solid var(--brand); outline-offset: 4px; }
+    .film-cta::before, .film-cta::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; }
+    .film-cta::before { box-shadow: 0 0 0 0 rgba(0, 119, 34, .55); }
+    .film-cta::after { background: linear-gradient(105deg, transparent 30%, rgba(255, 255, 255, .45) 50%, transparent 70%); }
+    .film-frame.cta-pulse .film-cta::before { animation: ctaRing .95s ease-out 3; }
+    .film-frame.cta-pulse .film-cta::after { animation: ctaGlint .95s ease-out 3; }
+    @keyframes ctaRing { 0% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 119, 34, .55); } 100% { opacity: 1; box-shadow: 0 0 0 calc(16 / 1920 * 100cqw) rgba(0, 119, 34, 0); } }
+    @keyframes ctaGlint { 0% { opacity: 0; } 30% { opacity: 1; } 100% { opacity: 0; } }
+    .film video {
+      display: block; width: 100%; height: 100%; object-fit: cover; background: #fafaf6;
+      /* light: the film's paper matches the page, so feather the edges until it dissolves into it */
+      -webkit-mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent), linear-gradient(transparent, #000 4.5%, #000 95.5%, transparent);
+      -webkit-mask-composite: source-in;
+      mask-image: linear-gradient(90deg, transparent, #000 3%, #000 97%, transparent), linear-gradient(transparent, #000 4.5%, #000 95.5%, transparent);
+      mask-composite: intersect;
+    }
+    :root[data-theme="dark"] .film video { -webkit-mask-image: none; mask-image: none; border-radius: 20px; box-shadow: var(--shadow-lg); }
+    .film-ctl { position: absolute; right: 4.5%; bottom: 7%; display: flex; gap: 8px; }
+    .film-btn {
+      display: inline-flex; align-items: center; gap: 7px; height: 36px; min-width: 36px; padding: 0 11px; justify-content: center;
+      border-radius: 999px; border: 1px solid rgba(17, 24, 19, .08); cursor: pointer;
+      background: rgba(255, 255, 255, .72); color: #4f5a52; font: 600 13px var(--sans);
+      -webkit-backdrop-filter: blur(10px) saturate(1.4); backdrop-filter: blur(10px) saturate(1.4);
+      box-shadow: 0 4px 14px -6px rgba(17, 24, 19, .25);
+      transition: opacity .25s, transform .25s, color .15s, background .15s;
+    }
+    .film-btn:hover { color: #111813; background: rgba(255, 255, 255, .9); }
+    .film-btn svg { flex: none; }
+    .film-btn .on, .film-sound[aria-pressed="true"] .off { display: none; }
+    .film-sound[aria-pressed="true"] .on { display: block; }
+    #reelReplay { opacity: 0; transform: translateY(4px); pointer-events: none; padding: 0; width: 36px; }
+    .film-frame:hover #reelReplay, .film-frame:focus-within #reelReplay, .film-frame.ended #reelReplay, .film-frame.idle #reelReplay { opacity: 1; transform: none; pointer-events: auto; }
+    @media (hover: none) { #reelReplay { opacity: 1; transform: none; pointer-events: auto; } }
+    @media (max-width: 640px) {
+      .film { padding-top: 40px; }
+      .film .wrap { padding: 0; }
+      .film-ctl { right: 12px; bottom: 6%; }
+      .film-btn { height: 32px; min-width: 32px; font-size: 12px; }
+      #reelReplay { width: 32px; }
+    }
+
     /* ---------- sections ---------- */
     section.block { padding: 96px 0 0; }
     .kicker { font-size: 13px; font-weight: 600; letter-spacing: .08em; color: var(--brand); margin: 0 0 10px; }
@@ -421,8 +473,8 @@
     <div class="wrap">
       <a class="logo" href="#top"><img src="icons/logo.svg" alt="" />这豆瓣评分多少？</a>
       <ul>
-        <li><a href="#smart">片名识别</a></li>
         <li><a href="#features">功能</a></li>
+        <li><a href="#smart">片名识别</a></li>
         <li><a href="#how">原理</a></li>
         <li><a href="#install">安装</a></li>
         <li><a href="#faq">问答</a></li>
@@ -512,43 +564,25 @@
       </div>
     </div>
 
-    <!-- ================= SMART ================= -->
-    <section class="block" id="smart">
+    <!-- ================= FILM ================= -->
+    <section class="film" id="film" aria-label="30 秒介绍短片">
       <div class="wrap">
-        <p class="kicker">片名识别 · v1.1</p>
-        <h2 class="reveal">标题是「看懂结局你就赢了」<br />也认得出是哪部片。</h2>
-        <p class="section-lede reveal">很多解说视频的标题根本不写片名。插件会把<strong>标题、简介、标签</strong>放在一起看：同一个名字出现在越多地方，就越可能是你在看的那部。</p>
-
-        <div class="pipeline reveal">
-          <div class="src">
-            <h3>标题 <span class="pts zero">+0</span></h3>
-            <p class="dim">诺兰最烧脑的一部！看懂这个结局你就赢了</p>
+        <div class="film-frame" id="filmFrame">
+          <video id="reel" muted playsinline preload="none" poster="media/reel-start.jpg" disablepictureinpicture disableremoteplayback
+            aria-label="介绍短片：以前查豆瓣分要复制片名、打开豆瓣、搜索、找对条目；装了插件，在任何网页点一下就出分。">
+            <source src="media/reel.mp4" type="video/mp4" />
+          </video>
+          <a class="film-cta" id="reelCta" href="https://chromewebstore.google.com/detail/necllgpdfffbdcgenhlgoimhnjfjdkkp" target="_blank" rel="noopener" tabindex="-1" aria-label="前往 Chrome 应用商店，免费安装"></a>
+          <div class="film-ctl">
+            <button class="film-btn" id="reelReplay" type="button" aria-label="重播">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1"/><path d="M3.5 4v4.5H8"/></svg>
+            </button>
+            <button class="film-btn film-sound" id="reelSound" type="button" aria-pressed="false">
+              <svg class="off" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="m16 9.5 5 5M21 9.5l-5 5"/></svg>
+              <svg class="on" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18.5 6.5a7.5 7.5 0 0 1 0 11"/></svg>
+              <span id="reelSoundTxt">开启声音</span>
+            </button>
           </div>
-          <div class="src">
-            <h3>简介 <span class="pts">+3</span></h3>
-            <p>本期影片：<br /><mark>《盗梦空间》</mark><br /><span class="dim">BGM：《Time》 ← 歌名，跳过</span></p>
-          </div>
-          <div class="src">
-            <h3>标签 <span class="pts">+3</span></h3>
-            <div class="chips">
-              <span class="chip">科幻</span><span class="chip">电影解说</span><span class="chip hit">盗梦空间</span><span class="chip">克里斯托弗·诺兰</span>
-            </div>
-          </div>
-          <div class="arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
-          <div class="out">
-            <h3 style="margin:0;font-size:12px;letter-spacing:.06em;font-weight:600">拿去查</h3>
-            <div class="name">盗梦空间</div>
-            <div class="total">命中 2 处 · 6 分</div>
-          </div>
-        </div>
-
-        <div class="rules reveal">
-          <div class="rule"><b>剥掉站名外壳</b><code><em>Spirited Away</em> <s>| Netflix</s></code></div>
-          <div class="rule"><b>去掉宣发词</b><code><em>Interstellar</em> <s>Official Teaser Trailer</s></code></div>
-          <div class="rule"><b>集数不算片名</b><code>《<em>老友记</em>》<s>1-10集全</s></code></div>
-          <div class="rule"><b>季数保留</b><code>《<em>权力的游戏</em>》<em>第八季</em><s>正式预告</s></code></div>
-          <div class="rule"><b>中外双名一起搜，按年份核对</b><code><em>最后一案 El problema final</em> (<em>2026</em>) <s>中文字幕</s></code></div>
-          <div class="rule"><b>认错了？一键换</b><code>也可能是：<em>候选 A</em> · <em>候选 B</em></code></div>
         </div>
       </div>
     </section>
@@ -602,11 +636,52 @@
       </div>
     </section>
 
+    <!-- ================= SMART ================= -->
+    <section class="block" id="smart">
+      <div class="wrap">
+        <p class="kicker">片名识别 · v1.1</p>
+        <h2 class="reveal">标题是「看懂结局你就赢了」<br />也认得出是哪部片。</h2>
+        <p class="section-lede reveal">很多解说视频的标题根本不写片名。插件会把<strong>标题、简介、标签</strong>放在一起看：同一个名字出现在越多地方，就越可能是你在看的那部。</p>
+
+        <div class="pipeline reveal">
+          <div class="src">
+            <h3>标题 <span class="pts zero">+0</span></h3>
+            <p class="dim">诺兰最烧脑的一部！看懂这个结局你就赢了</p>
+          </div>
+          <div class="src">
+            <h3>简介 <span class="pts">+3</span></h3>
+            <p>本期影片：<br /><mark>《盗梦空间》</mark><br /><span class="dim">BGM：《Time》 ← 歌名，跳过</span></p>
+          </div>
+          <div class="src">
+            <h3>标签 <span class="pts">+3</span></h3>
+            <div class="chips">
+              <span class="chip">科幻</span><span class="chip">电影解说</span><span class="chip hit">盗梦空间</span><span class="chip">克里斯托弗·诺兰</span>
+            </div>
+          </div>
+          <div class="arrow" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+          <div class="out">
+            <h3 style="margin:0;font-size:12px;letter-spacing:.06em;font-weight:600">拿去查</h3>
+            <div class="name">盗梦空间</div>
+            <div class="total">命中 2 处 · 6 分</div>
+          </div>
+        </div>
+
+        <div class="rules reveal">
+          <div class="rule"><b>剥掉站名外壳</b><code><em>Spirited Away</em> <s>| Netflix</s></code></div>
+          <div class="rule"><b>去掉宣发词</b><code><em>Interstellar</em> <s>Official Teaser Trailer</s></code></div>
+          <div class="rule"><b>集数不算片名</b><code>《<em>老友记</em>》<s>1-10集全</s></code></div>
+          <div class="rule"><b>季数保留</b><code>《<em>权力的游戏</em>》<em>第八季</em><s>正式预告</s></code></div>
+          <div class="rule"><b>中外双名一起搜，按年份核对</b><code><em>最后一案 El problema final</em> (<em>2026</em>) <s>中文字幕</s></code></div>
+          <div class="rule"><b>认错了？一键换</b><code>也可能是：<em>候选 A</em> · <em>候选 B</em></code></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ================= HOW ================= -->
     <section class="block" id="how">
       <div class="wrap">
         <p class="kicker">原理</p>
-        <h2 class="reveal">为什么不会被封 IP。</h2>
+        <h2 class="reveal">放心查，就像你亲手点开一样。</h2>
         <p class="section-lede reveal">豆瓣的搜索接口对海外 IP 限流很严（常见「搜索访问太频繁」），所以插件从头到尾<strong>不碰豆瓣搜索</strong>。</p>
 
         <div class="steps reveal">
@@ -730,6 +805,61 @@
       if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
     }), { rootMargin: "0px 0px -8% 0px" });
     document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+    // ---------- film: plays itself when in view, holds the last frame, no player UI ----------
+    (() => {
+      const v = document.getElementById("reel"), frame = document.getElementById("filmFrame");
+      const snd = document.getElementById("reelSound"), sndTxt = document.getElementById("reelSoundTxt");
+      const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      let inView = false;
+      if (still) { v.poster = "media/reel-end.jpg"; frame.classList.add("idle"); }
+      const syncSound = () => {
+        snd.setAttribute("aria-pressed", String(!v.muted));
+        sndTxt.textContent = v.muted ? "开启声音" : "静音";
+      };
+      // if the browser refuses playback with sound, keep the picture moving muted
+      const go = () => {
+        const p = v.play();
+        if (p) p.catch(() => {
+          if (!v.muted) { v.muted = true; syncSound(); v.play().catch(() => frame.classList.add("idle")); }
+          else frame.classList.add("idle");
+        });
+      };
+      // start fetching a little before it scrolls in
+      new IntersectionObserver(([e], o) => {
+        if (e.isIntersecting) { v.preload = "auto"; o.disconnect(); }
+      }, { rootMargin: "600px 0px" }).observe(frame);
+      new IntersectionObserver(([e]) => {
+        inView = e.isIntersecting;
+        if (inView && !still && !v.ended && !frame.classList.contains("idle")) go();
+        else if (!inView) v.pause();
+      }, { threshold: .45 }).observe(frame);
+      // once the install button is on screen, make it real and flash a hint three times
+      const cta = document.getElementById("reelCta");
+      let pulsed = false;
+      const syncCta = () => {
+        const on = v.ended || v.currentTime >= 27.6 || frame.classList.contains("idle") && still;
+        frame.classList.toggle("cta-on", on);
+        cta.tabIndex = on ? 0 : -1;
+        if (on && !pulsed && (v.currentTime >= 28.0 || v.ended || still)) {
+          pulsed = true;
+          frame.classList.remove("cta-pulse"); void frame.offsetWidth; frame.classList.add("cta-pulse");
+        }
+        if (!on) { pulsed = false; frame.classList.remove("cta-pulse"); }
+      };
+      ["timeupdate", "seeked", "ended"].forEach((ev) => v.addEventListener(ev, syncCta));
+      syncCta();
+      v.addEventListener("play", () => frame.classList.remove("ended", "idle"));
+      v.addEventListener("ended", () => frame.classList.add("ended"));
+      document.getElementById("reelReplay").addEventListener("click", () => {
+        v.currentTime = 0; frame.classList.remove("idle"); go();
+      });
+      snd.addEventListener("click", () => {
+        v.muted = !v.muted;
+        syncSound();
+        if (!v.muted && v.paused && !v.ended && inView) { frame.classList.remove("idle"); go(); }
+      });
+    })();
 
     // ---------- hero demo ----------
     const DEMOS = [
