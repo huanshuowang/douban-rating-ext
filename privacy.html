@@ -1,6 +1,15 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-0ZL6723TXW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-0ZL6723TXW');
+  </script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>隐私政策 - 这豆瓣评分多少？</title>
@@ -15,10 +24,11 @@
     }
     * { box-sizing: border-box; }
     body { margin: 0; background: var(--paper); color: var(--ink-2); font: 16px/1.8 -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
-    .top { max-width: 760px; margin: 0 auto; padding: 20px; display: flex; align-items: center; justify-content: space-between; }
-    .logo { display: flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 700; font-size: 15px; text-decoration: none; }
-    .logo img { width: 26px; height: 26px; }
-    .back { color: var(--ink-3); font-size: 14px; text-decoration: none; }
+    .top { max-width: 760px; margin: 0 auto; padding: 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .logo { display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--ink); font-weight: 700; font-size: 15px; text-decoration: none; }
+    .logo img { flex: none; width: 26px; height: 26px; }
+    .logo span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .back { flex: none; color: var(--ink-3); font-size: 14px; text-decoration: none; }
     .back:hover { color: var(--ink); }
     main { max-width: 760px; margin: 0 auto; padding: 32px 20px 80px; }
     h1 { font: 900 clamp(30px, 5vw, 42px)/1.25 "Noto Serif SC", "Songti SC", serif; color: var(--ink); margin: 0 0 8px; }
@@ -29,10 +39,10 @@
   </style>
 </head>
 <body>
-  <header class="top"><a class="logo" href="index.html"><img src="icons/logo.svg" alt="">这豆瓣评分多少？</a><a class="back" href="index.html">← 返回首页</a></header>
+  <header class="top"><a class="logo" href="index.html"><img src="icons/logo.svg" alt=""><span>这豆瓣评分多少？</span></a><a class="back" href="index.html">← 返回首页</a></header>
   <main>
   <h1>《这豆瓣评分多少？》隐私政策</h1>
-  <p class="updated">最后更新：2026 年 7 月 5 日</p>
+  <p class="updated">最后更新：2026 年 10 月 3 日</p>
 
   <p>《这豆瓣评分多少？》是一个非官方浏览器扩展，用于在用户主动点击扩展图标后，根据当前网页内容查询影视作品的豆瓣评分。本扩展与豆瓣、Google、Bing、百度或其他第三方平台没有官方关联。</p>
 
@@ -51,6 +61,8 @@
   <h2>删除数据</h2>
   <p>你可以通过卸载扩展、清除浏览器中的扩展数据，或等待缓存过期来删除本地保存的数据。</p>
 
+  <h2>介绍网站的访问统计</h2>
+  <p>本扩展的介绍网站（huanshuowang.com/douban-rating-ext）使用 Google Analytics 统计访问情况，例如访问次数、访客来自哪个网站、页面停留时间，以及“添加至 Chrome”按钮的点击次数。Google Analytics 会在你的浏览器中设置 Cookie，相关数据由 Google 处理，详见 <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">Google 如何使用来自合作伙伴网站的信息</a>。这些统计只用于了解介绍网站的访问情况；扩展本身不包含任何统计代码。如不希望被统计，可以使用浏览器的隐私设置，或安装 <a href="https://tools.google.com/dlpage/gaoptout" target="_blank" rel="noopener">Google Analytics 停用插件</a>。</p>
   <h2>联系方式</h2>
   <p>如有问题，请通过项目仓库或发布页面提供的联系方式与开发者联系。</p>
   </main>
