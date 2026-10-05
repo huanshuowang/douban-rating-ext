@@ -566,6 +566,33 @@ function showResult(query, res, hintYear) {
   setOpen(url, id ? "在豆瓣查看" : "去豆瓣搜索", !id);
 }
 
+// ---------- 评价提示 ----------
+const CWS_ID = "necllgpdfffbdcgenhlgoimhnjfjdkkp";
+// 从 Edge 商店装的（扩展 id 和 Chrome 商店的不同）就去 Edge 商店评价
+const reviewUrl = () =>
+  chrome.runtime.id !== CWS_ID && /\bEdg\//.test(navigator.userAgent)
+    ? "https://microsoftedge.microsoft.com/addons/detail/" + chrome.runtime.id
+    : "https://chromewebstore.google.com/detail/" + CWS_ID + "/reviews";
+
+let onWelcome = false; // 弹窗是在欢迎页的演示视频上打开的
+
+// 查到分了：欢迎页的「试一下」打勾；第 5 次查到分时请用户去商店留个评价
+// （只出现这一次，不给任何奖励 —— 商店政策不允许拿奖励换评价）
+async function noteRated(q, res) {
+  if (onWelcome) chrome.storage.session.set({ demoDone: { name: res.name || q, rating: res.rating } });
+  const { stats = {} } = await chrome.storage.local.get("stats");
+  stats.ok = (stats.ok || 0) + 1;
+  const ask = stats.ok >= 5 && !stats.asked;
+  if (ask) stats.asked = Date.now();
+  await chrome.storage.local.set({ stats });
+  if (ask) $("rate").hidden = false;
+}
+
+function finish(q, res, year) {
+  showResult(q, res, year);
+  if (res && res.rating) noteRated(q, res);
+}
+
 let lookupSeq = 0;
 let pageYear = "", pageQueries = new Set(); // 年份只用于从本页认出来的片名，手动输入的别的片不带
 async function lookup(q) {
@@ -579,13 +606,13 @@ async function lookup(q) {
   const key = "db7:" + q + (year ? "|" + year : ""); // 升版失效旧缓存（此前可能存了误抓的评分）
   const cached = (await chrome.storage.local.get(key))[key];
   if (cached && Date.now() - cached.t < CACHE_TTL) {
-    if (seq === lookupSeq) showResult(q, cached.v, year);
+    if (seq === lookupSeq) finish(q, cached.v, year);
     return;
   }
   const res = await resolve(q, year);
   // 只缓存确定的结果（有分 / 暂无评分）；被拦、没找到、读取失败下次重新查
   if (res.rating || res.unrated) await chrome.storage.local.set({ [key]: { t: Date.now(), v: res } });
-  if (seq === lookupSeq) showResult(q, res, year);
+  if (seq === lookupSeq) finish(q, res, year);
 }
 
 // 其他候选片名：点一下就换成它重查
@@ -602,18 +629,46 @@ function renderAlts(alts) {
   }
 }
 
+// 右键「查豆瓣评分」时，后台把选中的文字放在这里（15 秒内有效，读完即删）
+async function takePending() {
+  const { pending } = await chrome.storage.session.get("pending");
+  if (!pending) return null;
+  chrome.storage.session.remove("pending");
+  return Date.now() - pending.t < 15000 ? pending : null;
+}
+
 async function init() {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   try { $("host").textContent = new URL(tab.url).hostname.replace(/^www\./, ""); } catch (_) {}
+  $("rateLink").href = reviewUrl();
+  $("rateClose").addEventListener("click", () => { $("rate").hidden = true; });
+  // 底部显示实际分配到的快捷键（和别的插件撞了时浏览器不分配，就不显示）
+  chrome.commands.getAll().then((cmds) => {
+    const sc = (cmds.find((c) => c.name === "_execute_action") || {}).shortcut;
+    if (sc) { $("scKey").textContent = sc; $("scTip").hidden = false; }
+  });
 
+  const pending = await takePending();
+  onWelcome = !pending && tab?.title === WELCOME_TITLE;
   let info = null;
-  try {
-    const [r] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: pageInfo });
-    info = r?.result || null;
-  } catch (_) {}
+  if (pending) {
+    // 查选中的文字（如“《星际穿越》”“Inception (2010)”），不读页面
+    $("host").textContent = pending.host;
+    $("hint").textContent = "查的是你选中的文字，不对就直接改，回车重查";
+    info = { title: pending.q, desc: "", tags: [] };
+  } else if (onWelcome) {
+    $("host").textContent = "演示视频";
+    info = DEMO_PAGE;
+  } else {
+    try {
+      const [r] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: pageInfo });
+      info = r?.result || null;
+    } catch (_) {}
+  }
   if (!info || !info.title) info = { title: tab?.title || "", desc: "", tags: [] };
 
   let { q, alts, year } = pickQuery(info);
+  if (pending && !q) q = pending.q; // 选中的是一整句、洗不出片名时，原样去查
   // 页面元素没读到像样的片名（如只剩“YouTube”）→ 退回标签页标题再试一次
   if (!q && tab?.title && tab.title !== info.title) ({ q, alts, year } = pickQuery({ title: tab.title }));
   pageYear = year || "";

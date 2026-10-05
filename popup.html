@@ -186,6 +186,26 @@
     .cta.ghost:hover { background: color-mix(in srgb, var(--brand) 16%, transparent); }
     .cta[hidden] { display: none; }
 
+    /* ---------- rate prompt（第 5 次查到分时出现一次） ---------- */
+    .rate {
+      display: flex; align-items: center; gap: 7px;
+      margin-top: 10px; padding: 7px 6px 7px 10px; border-radius: 10px;
+      background: var(--surface); color: var(--ink-2); font-size: 12px; line-height: 1.45;
+    }
+    .rate[hidden] { display: none; }
+    .rate svg { flex: none; color: var(--star); }
+    .rate span { flex: 1; min-width: 0; }
+    .rate a {
+      flex: none; padding: 3px 9px; border-radius: 7px;
+      color: var(--brand); font-weight: 600; text-decoration: none; background: var(--brand-soft);
+    }
+    .rate a:hover { background: color-mix(in srgb, var(--brand) 16%, transparent); }
+    .rate button {
+      flex: none; width: 22px; height: 22px; border: 0; border-radius: 6px; background: none;
+      color: var(--ink-3); font-size: 15px; line-height: 1; cursor: pointer;
+    }
+    .rate button:hover { color: var(--ink); background: var(--line); }
+
     /* ---------- manual fallback ---------- */
     .manual {
       display: flex; align-items: center; gap: 2px; flex-wrap: wrap;
@@ -198,6 +218,12 @@
       transition: background .15s, color .15s;
     }
     .manual a:hover { background: var(--surface); color: var(--brand); }
+
+    /* ---------- tips：快捷键 / 右键 / 使用说明 ---------- */
+    .tips { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 11px; color: var(--ink-3); }
+    .tips kbd { opacity: 1; padding: 2px 4px; font-size: 10px; margin-right: 3px; }
+    .tips a { margin-left: auto; color: var(--ink-2); text-decoration: none; }
+    .tips a:hover { color: var(--brand); }
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation: none !important; transition: none !important; }
@@ -241,6 +267,13 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
     </a>
 
+    <div id="rate" class="rate" hidden>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.6l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.4l-5.9 3.3 1.3-6.6-4.9-4.6 6.6-.8z"/></svg>
+      <span>用着顺手的话，去商店留个评价吧，能帮更多人找到它</span>
+      <a id="rateLink" target="_blank" rel="noopener">去评价</a>
+      <button id="rateClose" type="button" aria-label="关闭">×</button>
+    </div>
+
     <nav class="manual" aria-label="手动搜索">
       <span>没找对？去</span>
       <a id="baidu" target="_blank" rel="noopener">百度</a>
@@ -249,8 +282,15 @@
       <a id="bing" target="_blank" rel="noopener">Bing</a>
       <span>搜</span>
     </nav>
+
+    <footer class="tips">
+      <span id="scTip" hidden><kbd id="scKey"></kbd>随时查</span>
+      <span>选中片名可右键查</span>
+      <a href="welcome.html" target="_blank" rel="noopener">使用说明</a>
+    </footer>
   </main>
 
+  <script src="demo.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>装好了 · 这豆瓣评分多少？</title>
+  <link rel="icon" href="icons/logo.svg" type="image/svg+xml">
+  <style>
+    :root {
+      --paper: #fafaf6; --paper-2: #f2f3ee; --card: #ffffff;
+      --ink: #111813; --ink-2: #4f5a52; --ink-3: #87918a; --line: #e3e6df;
+      --brand: #007722; --brand-soft: #e6f3e9; --mark: #c8efd3;
+      --warn-bg: #fff5e2; --warn-ink: #8a5300;
+      --shadow: 0 1px 2px rgba(17, 24, 19, .05), 0 8px 24px -8px rgba(17, 24, 19, .12);
+      --serif: "Songti SC", "STSong", "Noto Serif SC", "Source Han Serif SC", serif;
+      --sans: -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", Roboto, sans-serif;
+      --num: "SF Pro Display", -apple-system, "Segoe UI Variable Display", "Segoe UI", Roboto, sans-serif;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --paper: #0e110f; --paper-2: #151916; --card: #1a1f1b;
+        --ink: #e9efea; --ink-2: #a5b0a8; --ink-3: #6f7b73; --line: #29302b;
+        --brand: #4cc274; --brand-soft: #16291c; --mark: #1f4a2c;
+        --warn-bg: #33270f; --warn-ink: #f0c26b;
+        --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -8px rgba(0, 0, 0, .5);
+        color-scheme: dark;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--paper); color: var(--ink);
+      font: 15px/1.65 var(--sans); -webkit-font-smoothing: antialiased;
+    }
+    a { color: var(--brand); }
+    .wrap { max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+    [hidden] { display: none !important; }
+    :root[data-browser="edge"] .only-chrome, :root[data-browser="chrome"] .only-edge { display: none; }
+
+    kbd {
+      display: inline-block; font: 600 13px/1 var(--num); color: var(--ink);
+      padding: 3px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 6px;
+      background: var(--card); white-space: nowrap; vertical-align: 1px;
+    }
+
+    /* ---------- top / hero：压矮，让三步都在第一屏 ---------- */
+    .top { display: flex; align-items: center; height: 60px; }
+    .logo { display: flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 700; font-size: 15px; text-decoration: none; }
+    .logo img { width: 24px; height: 24px; }
+    .hero { padding: 16px 0 0; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px; margin: 0;
+      font-size: 13px; color: var(--ink-2); padding: 3px 12px 3px 3px; border-radius: 999px;
+      background: var(--card); border: 1px solid var(--line);
+    }
+    .eyebrow b { background: var(--brand); color: #fff; font-size: 11px; padding: 1px 8px; border-radius: 999px; }
+    h1 { font: 900 clamp(30px, 4vw, 42px)/1.2 var(--serif); letter-spacing: -.01em; margin: 14px 0 8px; }
+    h1 em { font-style: normal; color: var(--brand); }
+    .lede { font-size: 16px; color: var(--ink-2); margin: 0; }
+    .outside {
+      margin: 18px 0 0; padding: 10px 14px; border-radius: 12px;
+      background: var(--warn-bg); color: var(--warn-ink); font-size: 14px;
+    }
+
+    /* ---------- 三步并排 ---------- */
+    .steps {
+      list-style: none; margin: 26px 0 0; padding: 0;
+      display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;
+    }
+    .step {
+      display: flex; flex-direction: column; padding: 20px;
+      background: var(--card); border: 1px solid var(--line); border-radius: 18px; box-shadow: var(--shadow);
+    }
+    .head { display: flex; align-items: center; gap: 10px; }
+    .num {
+      flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+      font: 700 14px/1 var(--num); color: var(--ink-2); background: var(--paper-2);
+    }
+    .step[data-done="true"] .num { background: var(--brand); color: #fff; font-size: 0; }
+    .step[data-done="true"] .num::after { content: "✓"; font-size: 15px; }
+    h2 { font-size: 16px; margin: 0; min-width: 0; }
+    .status {
+      flex: none; margin-left: auto; font-size: 12px; font-weight: 600; padding: 1px 9px; border-radius: 999px;
+      color: var(--ink-3); background: var(--paper-2); white-space: nowrap;
+    }
+    .step[data-done="true"] .status { color: var(--brand); background: var(--brand-soft); }
+    .step > p { margin: 10px 0 0; font-size: 14px; color: var(--ink-2); }
+    .visual { margin-top: auto; padding-top: 14px; }
+    .box { padding: 10px; border-radius: 12px; background: var(--paper-2); border: 1px solid var(--line); }
+
+    /* 1. 拼图菜单示意 */
+    .tb-bar { display: flex; align-items: center; gap: 8px; }
+    .tb-url {
+      flex: 1; min-width: 0; height: 26px; padding: 0 10px; border-radius: 999px; background: var(--card);
+      font: 11px/26px var(--num); color: var(--ink-3); overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    }
+    .tb-icon {
+      flex: none; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 7px;
+      color: var(--ink-2); background: var(--card); box-shadow: 0 0 0 2px var(--brand);
+    }
+    .tb-menu { margin-top: 8px; padding: 6px; border-radius: 10px; background: var(--card); border: 1px solid var(--line); }
+    .tb-menu small { display: block; padding: 0 6px 4px; font-size: 11px; color: var(--ink-3); }
+    .tb-row { display: flex; align-items: center; gap: 8px; padding: 5px 6px; border-radius: 8px; background: var(--paper-2); font-size: 13px; }
+    .tb-row img { width: 16px; height: 16px; }
+    .tb-row span { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .tb-row .pin {
+      flex: none; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%;
+      color: var(--brand); background: var(--brand-soft); animation: ring 1.8s ease-out infinite;
+    }
+    @keyframes ring { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--brand) 45%, transparent); } 100% { box-shadow: 0 0 0 9px transparent; } }
+    .step[data-done="true"] .tb-row .pin { animation: none; }
+
+    /* 2. 模拟 B 站解说视频 */
+    .v-top { display: flex; gap: 10px; align-items: flex-start; }
+    .thumb {
+      position: relative; flex: none; width: 104px; aspect-ratio: 16 / 10; border-radius: 8px; overflow: hidden;
+      background: radial-gradient(120% 90% at 70% 20%, #3d5a80 0%, #1b263b 55%, #0d1321 100%);
+      display: grid; place-items: center;
+    }
+    .thumb .play { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: rgba(255, 255, 255, .9); color: #1b263b; }
+    .thumb .dur { position: absolute; right: 4px; bottom: 3px; font: 600 10px/1 var(--num); color: #fff; background: rgba(0, 0, 0, .55); padding: 2px 4px; border-radius: 3px; }
+    .v-title { font-weight: 650; font-size: 14px; line-height: 1.45; color: var(--ink); }
+    .v-desc { margin-top: 8px; font-size: 12px; line-height: 1.6; color: var(--ink-2); white-space: pre-line; }
+    .v-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
+    .v-tags span { font-size: 11px; color: var(--ink-2); background: var(--card); border: 1px solid var(--line); padding: 0 8px; border-radius: 999px; }
+    .result { margin: 10px 0 0; font-size: 14px; color: var(--ink-2); }
+    .result b { font: 700 17px/1 var(--num); color: var(--brand); }
+
+    /* 3. 快捷键 / 右键 */
+    #stepMore .visual { margin-top: 12px; padding-top: 0; }
+    .tip { padding: 10px 12px; border-radius: 12px; background: var(--paper-2); border: 1px solid var(--line); }
+    .tip + .tip { margin-top: 10px; }
+    .tip h3 { margin: 0; font-size: 14px; }
+    .tip p { margin: 4px 0 0; font-size: 13px; color: var(--ink-2); }
+    .tip button.link { margin-top: 4px; border: 0; padding: 0; background: none; font: inherit; font-size: 13px; color: var(--brand); text-decoration: underline; cursor: pointer; }
+    .tip .try { margin-top: 8px; padding: 7px 10px; border-radius: 9px; background: var(--card); color: var(--ink); }
+    .tip mark { background: var(--mark); color: inherit; padding: 0 2px; border-radius: 3px; }
+
+    .foot { margin: 28px 0 40px; font-size: 13px; color: var(--ink-3); }
+    .foot p { margin: 0 0 4px; }
+
+    @media (max-width: 880px) {
+      .steps { grid-template-columns: minmax(0, 1fr); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header class="wrap top">
+    <a class="logo" href="https://huanshuowang.com/douban-rating-ext/" target="_blank" rel="noopener"><img src="icons/logo.svg" alt=""><span>这豆瓣评分多少？</span></a>
+  </header>
+
+  <main class="wrap">
+    <section class="hero">
+      <p class="eyebrow"><b>✓</b>已经装好了</p>
+      <h1>花 30 秒，把它放到<em>手边</em>。</h1>
+      <p class="lede">插件只在你点它的时候工作。做完这三步，以后看到片名，点一下就知道豆瓣几分。</p>
+      <p class="outside" id="outside" hidden>你是直接打开的文件：第 2 步照样能试，但打勾和快捷键要从插件里打开才显示（点插件图标 → 弹窗底部「使用说明」）。</p>
+    </section>
+
+    <ol class="steps">
+      <li class="step" id="stepPin" data-done="false">
+        <div class="head"><span class="num">1</span><h2>固定到工具栏</h2><span class="status" id="pinStatus">还没固定</span></div>
+        <p class="only-chrome">新装的插件藏在右上角的拼图图标里。点开拼图，找到「这豆瓣评分多少？」，点旁边的图钉。</p>
+        <p class="only-edge">新装的插件藏在右上角的拼图图标（扩展）里。点开它，找到「这豆瓣评分多少？」，点旁边的眼睛图标。</p>
+        <div class="visual" aria-hidden="true">
+          <div class="box">
+            <div class="tb-bar">
+              <div class="tb-url">bilibili.com/video/…</div>
+              <div class="tb-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10 3.5a2 2 0 0 1 4 0V5h3a1 1 0 0 1 1 1v3h1.5a2 2 0 0 1 0 4H18v4a1 1 0 0 1-1 1h-3.5v-1.5a2 2 0 0 0-4 0V18H6a1 1 0 0 1-1-1v-3.5h1.5a2 2 0 0 0 0-4H5V6a1 1 0 0 1 1-1h4z"/></svg>
+              </div>
+            </div>
+            <div class="tb-menu">
+              <small class="only-chrome">扩展程序</small><small class="only-edge">扩展</small>
+              <div class="tb-row">
+                <img src="icons/score/icon32.png" alt=""><span>这豆瓣评分多少？</span>
+                <i class="pin only-chrome"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M9 3h6l-1 6 4 4H6l4-4z"/></svg></i>
+                <i class="pin only-edge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </li>
+
+      <li class="step" id="stepTry" data-done="false">
+        <div class="head"><span class="num">2</span><h2>试一下</h2><span class="status" id="tryStatus">等你点</span></div>
+        <p>下面是模拟的 B 站解说视频，标题没写片名。点工具栏上的半颗星图标<span class="sc-wrap">（或按 <kbd class="sc"></kbd>）</span>，看它认不认得出来。</p>
+        <div class="visual">
+          <div class="box">
+            <div class="v-top">
+              <div class="thumb" aria-hidden="true">
+                <span class="play"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>
+                <span class="dur">12:48</span>
+              </div>
+              <div class="v-title" id="vTitle"></div>
+            </div>
+            <div class="v-desc" id="vDesc"></div>
+            <div class="v-tags" id="vTags"></div>
+          </div>
+          <p class="result" id="tryResult" hidden></p>
+        </div>
+      </li>
+
+      <li class="step" id="stepMore">
+        <div class="head"><span class="num">3</span><h2>两个顺手的用法</h2></div>
+        <div class="visual">
+          <div class="tip">
+            <h3>快捷键</h3>
+            <p class="sc-wrap">任何页面按 <kbd class="sc"></kbd>，和点图标一样。没固定图标也能用。</p>
+            <p id="scMissing" hidden>快捷键没分配上，可能和别的插件撞了，自己设一个就好。</p>
+            <button class="link" id="scEdit" type="button">设置快捷键</button>
+          </div>
+          <div class="tip">
+            <h3>选中片名，右键查分</h3>
+            <p>知乎片单、文章、聊天记录里看到片名：选中 → 右键 →「查豆瓣评分」。</p>
+            <p class="try">试试选中：周末重看了《<mark>星际穿越</mark>》，还是哭了。</p>
+          </div>
+        </div>
+      </li>
+    </ol>
+
+    <footer class="foot">
+      <p>只在你点图标、按快捷键或右键查分时联网。没有开发者服务器，不收集任何数据。</p>
+      <p><a href="https://huanshuowang.com/douban-rating-ext/" target="_blank" rel="noopener">介绍页</a> · <a href="https://huanshuowang.com/douban-rating-ext/privacy.html" target="_blank" rel="noopener">隐私政策</a> · <a href="https://github.com/huanshuowang/douban-rating-ext" target="_blank" rel="noopener">GitHub</a></p>
+    </footer>
+  </main>
+
+  <script src="demo.js"></script>
+  <script src="welcome.js"></script>
+</body>
+</html>

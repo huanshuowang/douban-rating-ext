@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-0ZL6723TXW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-0ZL6723TXW');
+  </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>已卸载 - 这豆瓣评分多少？</title>
+  <link rel="icon" href="icons/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    :root { --paper:#fafaf6; --card:#fff; --ink:#111813; --ink-2:#4f5a52; --ink-3:#87918a; --line:#e3e6df; --brand:#007722; --brand-soft:#e6f3e9; color-scheme: light; }
+    @media (prefers-color-scheme: dark) {
+      :root { --paper:#0e110f; --card:#1a1f1b; --ink:#e9efea; --ink-2:#a5b0a8; --ink-3:#6f7b73; --line:#29302b; --brand:#4cc274; --brand-soft:#16291c; color-scheme: dark; }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--paper); color: var(--ink-2); font: 16px/1.8 -apple-system, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    [hidden] { display: none !important; }
+    .top { max-width: 640px; margin: 0 auto; padding: 20px; display: flex; align-items: center; }
+    .logo { display: flex; align-items: center; gap: 10px; min-width: 0; color: var(--ink); font-weight: 700; font-size: 15px; text-decoration: none; }
+    .logo img { flex: none; width: 26px; height: 26px; }
+    main { max-width: 640px; margin: 0 auto; padding: 32px 20px 80px; }
+    h1 { font: 900 clamp(30px, 6vw, 42px)/1.25 "Noto Serif SC", "Songti SC", serif; color: var(--ink); margin: 0 0 10px; }
+    p { margin: 0 0 12px; }
+    a { color: var(--brand); }
+    .reasons { display: grid; gap: 10px; margin: 28px 0 0; padding: 0; list-style: none; }
+    .reasons button {
+      width: 100%; text-align: left; font: inherit; color: var(--ink); cursor: pointer;
+      padding: 14px 18px; border-radius: 14px; background: var(--card); border: 1px solid var(--line);
+      transition: border-color .15s, background .15s;
+    }
+    .reasons button:hover { border-color: var(--brand); }
+    .reasons button[aria-pressed="true"] { border-color: var(--brand); background: var(--brand-soft); }
+    .more { margin-top: 20px; }
+    .more label { display: block; color: var(--ink); font-size: 15px; margin-bottom: 8px; }
+    .more textarea {
+      width: 100%; min-height: 96px; resize: vertical; padding: 12px 14px; border-radius: 12px;
+      font: inherit; font-size: 15px; color: var(--ink); background: var(--card); border: 1px solid var(--line);
+    }
+    .more textarea:focus { outline: none; border-color: var(--brand); }
+    .send {
+      margin-top: 12px; height: 44px; padding: 0 22px; border: 0; border-radius: 12px; cursor: pointer;
+      font: inherit; font-weight: 600; color: #fff; background: var(--brand);
+    }
+    .thanks { margin-top: 28px; padding: 20px 22px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+    .thanks p:last-child { margin-bottom: 0; }
+  </style>
+</head>
+<body>
+  <header class="top"><a class="logo" href="index.html"><img src="icons/logo.svg" alt=""><span>这豆瓣评分多少？</span></a></header>
+  <main>
+    <h1>已经卸载了。</h1>
+    <p>谢谢你使用过它。能告诉我为什么卸载吗？你的反馈能帮助我更好地改进插件！</p>
+
+    <div id="ask">
+      <ul class="reasons" id="reasons">
+        <li><button type="button" aria-pressed="false" data-label="认不出片名，或者经常查不到分" data-prompt="哪部片没认出来？在哪个网站上看的？">认不出片名，或者经常查不到分</button></li>
+        <li><button type="button" aria-pressed="false" data-label="用得少，装了就忘了" data-prompt="怎样会让你更常用它？">用得少，装了就忘了</button></li>
+        <li><button type="button" aria-pressed="false" data-label="识别太慢了" data-prompt="大概等了多久？在哪个网站上？">识别太慢了</button></li>
+        <li><button type="button" aria-pressed="false" data-label="无法在豆瓣查看" data-prompt="是打不开、跳错了条目，还是一直要验证？在哪部片上遇到的？">无法在豆瓣查看</button></li>
+        <li><button type="button" aria-pressed="false" data-label="换了别的工具" data-prompt="换成了哪个工具？它哪里更好用？">换了别的工具</button></li>
+        <li><button type="button" aria-pressed="false" data-label="其他原因" data-prompt="能说说是什么原因吗？">其他原因</button></li>
+      </ul>
+
+      <div class="more" id="more" hidden>
+        <label for="detail" id="detailLabel">想多说两句吗？</label>
+        <textarea id="detail" maxlength="1000"></textarea>
+        <button class="send" id="send" type="button">提交</button>
+      </div>
+    </div>
+
+    <div class="thanks" id="thanks" hidden>
+      <p><b>收到，谢谢！</b>每一条反馈我都会认真看。</p>
+      <p>不小心删掉的？<a href="index.html#install">重新安装</a></p>
+    </div>
+
+  </main>
+  <script>
+    // 反馈写进 Google 表单「这豆瓣评分多少？卸载反馈」（Drive 的 github website 文件夹里，回复在表单的「回复」页看）。
+    // 每道题对应一个 entry 编号；改了表单的题目要同步改这里。
+    var FORM = {
+      action: "https://docs.google.com/forms/d/e/1FAIpQLScwbdVdyGXPuKHMLkT9aGX9e0fNOK14rENF47cD3EcIAGpv1w/formResponse",
+      reason: "entry.1669197136",
+      detail: "entry.443650238",
+      version: "entry.931143834",
+      browser: "entry.169756751",
+    };
+    var params = new URLSearchParams(location.search);
+    var chosen = "", sent = false;
+
+    document.getElementById("reasons").addEventListener("click", function (e) {
+      var btn = e.target.closest("button[data-label]");
+      if (!btn) return;
+      chosen = btn.dataset.label;
+      document.querySelectorAll("#reasons button").forEach(function (b) {
+        b.setAttribute("aria-pressed", b === btn ? "true" : "false");
+      });
+      // 补充说明的提示跟着选的原因变
+      document.getElementById("detailLabel").textContent = btn.dataset.prompt + "（选填）";
+      document.getElementById("more").hidden = false;
+    });
+
+    // 只提交一次：点「提交」时；选了原因但直接关掉页面时也会补发
+    function send() {
+      if (!chosen || sent) return;
+      sent = true;
+      var v = params.get("v") || "", b = params.get("b") || "";
+      var body = new URLSearchParams();
+      body.append(FORM.reason, chosen);
+      body.append(FORM.detail, document.getElementById("detail").value.trim());
+      body.append(FORM.version, v);
+      body.append(FORM.browser, b);
+      navigator.sendBeacon(FORM.action, body);
+      if (window.gtag) gtag("event", "uninstall_reason", { reason: chosen, ext_version: v, browser: b });
+    }
+    document.getElementById("send").addEventListener("click", function () {
+      send();
+      document.getElementById("ask").hidden = true;
+      document.getElementById("thanks").hidden = false;
+    });
+    addEventListener("pagehide", send);
+    document.addEventListener("visibilitychange", function () { if (document.hidden) send(); });
+  </script>
+</body>
+</html>

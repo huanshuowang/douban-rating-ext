@@ -1,21 +1,33 @@
 {
   "manifest_version": 3,
   "name": "这豆瓣评分多少？- 电影/电视剧评分一键查 · Douban Movie & TV Rating",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "看电影、追剧、刷 B 站解说、逛 Netflix / YouTube 时，点一下就显示豆瓣评分，一键直达豆瓣条目。电影、电视剧、综艺、动漫都能查，中英文片名都认得。",
-  "permissions": ["activeTab", "scripting", "storage"],
+  "permissions": ["activeTab", "scripting", "storage", "contextMenus"],
   "host_permissions": [
     "https://www.google.com/*",
     "https://www.bing.com/*",
     "https://www.baidu.com/*",
     "https://movie.douban.com/*"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "action": {
     "default_title": "查豆瓣评分",
     "default_popup": "popup.html",
     "default_icon": {
       "16": "icons/score/icon16.png",
       "32": "icons/score/icon32.png"
+    }
+  },
+  "commands": {
+    "_execute_action": {
+      "suggested_key": {
+        "default": "Alt+Shift+D",
+        "mac": "MacCtrl+Shift+D"
+      },
+      "description": "查当前页面的豆瓣评分"
     }
   },
   "icons": {
